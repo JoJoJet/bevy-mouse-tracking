@@ -40,6 +40,12 @@ fn update_pos(
 #[derive(Clone, Copy, PartialEq, PartialOrd, Default, Debug)]
 pub struct MousePosWorld(pub Vec3);
 
+impl Display for MousePosWorld {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 impl Deref for MousePosWorld {
     type Target = Vec3;
     fn deref(&self) -> &Vec3 {
@@ -65,6 +71,7 @@ fn update_pos_ortho(
 }
 
 /// Plugin that tracks the mouse location.
+#[non_exhaustive]
 pub enum MousePosPlugin {
     /// Track the mouse without transforming it to worldspace.
     None,
