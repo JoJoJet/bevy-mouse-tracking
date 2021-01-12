@@ -1,0 +1,12 @@
+[package]
+name = "bevy_mouse_tracking_plugin"
+version = "0.1.0"
+authors = ["JoJoJet <joe102000@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.bevy]
+version = "0.4.*"
+default-features = false
+features = [ "render" ]
