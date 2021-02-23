@@ -64,9 +64,8 @@ fn update_pos_ortho(
             .iter()
             .next()
             .expect("could not find an orthographic camera");
-        mouse_world.0 = event.position.extend(0.0)
-            + Vec3::new(proj.left, proj.bottom, proj.near)
-            + camera.translation;
+        mouse_world.0 = camera
+                .mul_vec3(event.position.extend(0.0) + Vec3::new(proj.left, proj.bottom, proj.near));
     }
 }
 
