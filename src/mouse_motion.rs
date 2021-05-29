@@ -1,17 +1,18 @@
 use bevy::{
-    app::{stage, EventReader, Events},
-    ecs::{IntoSystem as _, Local, Res, ResMut},
+    app::{EventReader, Events},
+    ecs::system::IntoSystem,
     input::mouse::MouseMotion,
     math::Vec2,
 };
+use bevy::ecs::system::{Local, Res, ResMut};
+use bevy::app::CoreStage;
 
 fn update_mouse_motion(
-    mut event_reader: Local<EventReader<MouseMotion>>,
-    events: Res<Events<MouseMotion>>,
+    mut events: EventReader<MouseMotion>,
     mut res: ResMut<MouseMotion>,
 ) {
-    let delta = event_reader
-        .iter(&events)
+    let delta = events
+        .iter()
         .fold(Vec2::zero(), |acc, e| acc + e.delta);
     *res = MouseMotion { delta };
 }
@@ -21,9 +22,9 @@ pub struct MouseMotionPlugin;
 
 impl bevy::app::Plugin for MouseMotionPlugin {
     fn build(&self, app: &mut bevy::app::AppBuilder) {
-        app.add_resource(MouseMotion {
+        app.insert_resource(MouseMotion {
             delta: Vec2::zero(),
         })
-        .add_system_to_stage(stage::EVENT, update_mouse_motion.system());
+        .add_system_to_stage(CoreStage::First, update_mouse_motion.system());
     }
 }
