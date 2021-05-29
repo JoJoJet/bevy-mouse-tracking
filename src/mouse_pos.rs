@@ -1,13 +1,17 @@
 use std::{fmt::Display, ops::Deref};
 
 use bevy::{
-    app::{stage, AppBuilder, EventReader, Events, Plugin},
-    ecs::{IntoSystem as _, Local, Query, Res, ResMut, With},
+    app::{AppBuilder, EventReader, Events, Plugin},
+    ecs::system::IntoSystem,
     math::{Vec2, Vec3},
     render::camera::{Camera, OrthographicProjection},
     transform::components::GlobalTransform,
     window::CursorMoved,
 };
+use bevy::ecs::query::With;
+use bevy::ecs::system::{Local, Query, Res, ResMut};
+use bevy::prelude::SystemSet;
+use bevy::app::CoreStage;
 
 /// The location of the mouse in screenspace.
 #[derive(Clone, Copy, PartialEq, PartialOrd, Default, Debug)]
@@ -28,10 +32,11 @@ impl Display for MousePos {
 
 fn update_pos(
     mut mouse_loc: ResMut<MousePos>,
-    mut event_reader: Local<EventReader<CursorMoved>>,
-    cursor_moved: Res<Events<CursorMoved>>,
+    // mut event_reader: Local<EventReader<CursorMoved>>,
+    // cursor_moved: Res<Events<CursorMoved>>,
+    mut cursor_moved: EventReader<CursorMoved>,
 ) {
-    for event in event_reader.iter(&cursor_moved) {
+    for event in cursor_moved.iter() {
         mouse_loc.0 = event.position;
     }
 }
@@ -55,11 +60,10 @@ impl Deref for MousePosWorld {
 
 fn update_pos_ortho(
     mut mouse_world: ResMut<MousePosWorld>,
-    mut event_reader: Local<EventReader<CursorMoved>>,
-    cursor_moved: Res<Events<CursorMoved>>,
+    mut cursor_moved: EventReader<CursorMoved>,
     cameras: Query<(&GlobalTransform, &OrthographicProjection), With<Camera>>,
 ) {
-    if let Some(event) = event_reader.latest(&cursor_moved) {
+    if let Some(event) = cursor_moved.iter().next_back() {
         let (camera, proj) = cameras
             .iter()
             .next()
@@ -80,15 +84,15 @@ pub enum MousePosPlugin {
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_resource(MousePos::default())
+        app.insert_resource(MousePos::default())
             .add_system(update_pos.system());
         //
         // Optionally add features for converting to worldspace.
         match *self {
             MousePosPlugin::None => {}
             MousePosPlugin::Orthographic => {
-                app.add_resource(MousePosWorld::default())
-                    .add_system_to_stage(stage::EVENT, update_pos_ortho.system());
+                app.insert_resource(MousePosWorld::default())
+                    .add_system_to_stage(CoreStage::First, update_pos_ortho.system());
             }
         }
     }
