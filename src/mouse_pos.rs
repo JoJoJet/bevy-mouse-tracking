@@ -32,8 +32,6 @@ impl Display for MousePos {
 
 fn update_pos(
     mut mouse_loc: ResMut<MousePos>,
-    // mut event_reader: Local<EventReader<CursorMoved>>,
-    // cursor_moved: Res<Events<CursorMoved>>,
     mut cursor_moved: EventReader<CursorMoved>,
 ) {
     for event in cursor_moved.iter() {
@@ -92,7 +90,7 @@ impl Plugin for MousePosPlugin {
             MousePosPlugin::None => {}
             MousePosPlugin::Orthographic => {
                 app.insert_resource(MousePosWorld::default())
-                    .add_system_to_stage(CoreStage::First, update_pos_ortho.system());
+                    .add_system_to_stage(CoreStage::Update, update_pos_ortho.system());
             }
         }
     }
