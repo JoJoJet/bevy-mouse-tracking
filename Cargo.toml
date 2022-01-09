@@ -12,6 +12,5 @@ keywords = ["gamedev", "bevy", "mouse", "input"]
 
 [dependencies.bevy]
 version = "0.6.*"
-path = "../bevy"
 default-features = false
 features = [ "render" ]
