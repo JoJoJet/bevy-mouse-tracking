@@ -68,7 +68,7 @@
 //!     // Note: the screen-space position is still accessible
 //! }
 //! ```
-//! 
+//!
 //! This will print the world-space location of the mouse on every frame.  
 //! Note that this is only supported for two-dimensional, orthographic camera,
 //! but pull requests for 3D support are welcome!
