@@ -1,16 +1,8 @@
 use std::{fmt::Display, ops::Deref};
 
-use bevy::{
-    app::{App, CoreStage, EventReader, Plugin},
-    ecs::{
-        query::With,
-        system::{Query, ResMut},
-    },
-    math::{Vec2, Vec3},
-    render::camera::{Camera, OrthographicProjection},
-    transform::components::GlobalTransform,
-    window::CursorMoved,
-};
+use bevy::prelude::*;
+
+use crate::MouseTrackingSystem;
 
 /// The location of the mouse in screenspace.
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -78,15 +70,21 @@ pub enum MousePosPlugin {
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(MousePos::default())
-            .add_system(update_pos);
+        app.insert_resource(MousePos::default());
+        app.add_system_to_stage(
+            CoreStage::First,
+            update_pos.label(MouseTrackingSystem::ScreenPos),
+        );
         //
         // Optionally add features for converting to worldspace.
         match *self {
             MousePosPlugin::None => {}
             MousePosPlugin::Orthographic => {
-                app.insert_resource(MousePosWorld::default())
-                    .add_system_to_stage(CoreStage::Update, update_pos_ortho);
+                app.insert_resource(MousePosWorld::default());
+                app.add_system_to_stage(
+                    CoreStage::First,
+                    update_pos_ortho.label(MouseTrackingSystem::Motion),
+                );
             }
         }
     }
