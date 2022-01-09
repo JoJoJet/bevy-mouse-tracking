@@ -13,7 +13,7 @@
 //! use bevy::prelude::*;
 //! use bevy_mouse_tracking_plugin::MousePosPlugin;
 //! fn main() {
-//!     App::build()
+//!     App::new()
 //!         .add_plugins(DefaultPlugins)
 //!         .add_plugin(MousePosPlugin::None);
 //! }
@@ -35,7 +35,7 @@
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::MousePosPlugin;
 //! # fn main() {
-//! #    App::build()
+//! #    App::new()
 //! #        .add_plugins(DefaultPlugins)
 //!         .add_plugin(MousePosPlugin::None)
 //!         .add_system(dbg_mouse.system());
@@ -53,7 +53,7 @@
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::MousePosPlugin;
 //! fn main() {
-//!     App::build()
+//!     App::new()
 //!         .add_plugins(DefaultPlugins)
 //!         .add_plugin(MousePosPlugin::Orthographic);
 //! }

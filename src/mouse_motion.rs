@@ -13,7 +13,7 @@ fn update_mouse_motion(
 ) {
     let delta = events
         .iter()
-        .fold(Vec2::zero(), |acc, e| acc + e.delta);
+        .fold(Vec2::ZERO, |acc, e| acc + e.delta);
     *res = MouseMotion { delta };
 }
 
@@ -21,9 +21,9 @@ fn update_mouse_motion(
 pub struct MouseMotionPlugin;
 
 impl bevy::app::Plugin for MouseMotionPlugin {
-    fn build(&self, app: &mut bevy::app::AppBuilder) {
+    fn build(&self, app: &mut bevy::app::App) {
         app.insert_resource(MouseMotion {
-            delta: Vec2::zero(),
+            delta: Vec2::ZERO,
         })
         .add_system_to_stage(CoreStage::First, update_mouse_motion.system());
     }
