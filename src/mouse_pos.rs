@@ -1,7 +1,7 @@
 use std::{fmt::Display, ops::Deref};
 
 use bevy::{
-    app::{AppBuilder, EventReader, Events, Plugin},
+    app::{App, EventReader, Events, Plugin},
     ecs::system::IntoSystem,
     math::{Vec2, Vec3},
     render::camera::{Camera, OrthographicProjection},
@@ -14,7 +14,7 @@ use bevy::prelude::SystemSet;
 use bevy::app::CoreStage;
 
 /// The location of the mouse in screenspace.
-#[derive(Clone, Copy, PartialEq, PartialOrd, Default, Debug)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub struct MousePos(pub Vec2);
 
 impl Deref for MousePos {
@@ -40,7 +40,7 @@ fn update_pos(
 }
 
 /// The location of the mouse in worldspace.
-#[derive(Clone, Copy, PartialEq, PartialOrd, Default, Debug)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub struct MousePosWorld(pub Vec3);
 
 impl Display for MousePosWorld {
@@ -81,7 +81,7 @@ pub enum MousePosPlugin {
 }
 
 impl Plugin for MousePosPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.insert_resource(MousePos::default())
             .add_system(update_pos.system());
         //
