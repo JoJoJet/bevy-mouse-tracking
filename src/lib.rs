@@ -88,6 +88,8 @@
 //! mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }
 //! ```
 
+#![allow(warnings, unused)]
+
 mod mouse_pos;
 pub use mouse_pos::{MousePos, MousePosPlugin, MousePosWorld};
 
