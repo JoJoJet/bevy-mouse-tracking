@@ -16,4 +16,6 @@ default-features = false
 features = [ "render" ]
 
 [dev-dependencies.bevy]
+version = "0.6.*"
+default-features = false
 features = [ "render", "png", "bevy_winit" ]
