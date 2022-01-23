@@ -68,7 +68,7 @@
 //!     // Note: the screen-space position is still accessible
 //! }
 //! ```
-//! 
+//!
 //! This will print the world-space location of the mouse on every frame.  
 //! Note that this is only supported for two-dimensional, orthographic camera,
 //! but pull requests for 3D support are welcome!
@@ -88,7 +88,19 @@
 //! mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }
 //! ```
 
-#![allow(warnings, unused)]
+use bevy::prelude::*;
+
+/// Labels for the various mouse tracking systems, to be used for explicit ordering within stages.
+/// The use of this is usually not necessary, as the mouse tracking systems reside in [`bevy::app::CoreStage::First`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
+pub enum MouseTrackingSystem {
+    /// The system that updates the screen position each frame.
+    ScreenPos,
+    /// The system that updates the world position each frame.
+    WorldPos,
+    /// The system that updates the mouse motion each frame.
+    Motion,
+}
 
 mod mouse_pos;
 pub use mouse_pos::{MousePos, MousePosPlugin, MousePosWorld};

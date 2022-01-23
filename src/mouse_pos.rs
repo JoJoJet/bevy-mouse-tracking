@@ -1,17 +1,39 @@
 use std::{fmt::Display, ops::Deref};
 
-use bevy::{
-    app::{App, EventReader, Events, Plugin},
-    ecs::system::IntoSystem,
-    math::{Vec2, Vec3},
-    render::camera::{Camera, OrthographicProjection},
-    transform::components::GlobalTransform,
-    window::CursorMoved,
-};
-use bevy::ecs::query::With;
-use bevy::ecs::system::{Local, Query, Res, ResMut};
-use bevy::prelude::SystemSet;
-use bevy::app::CoreStage;
+use bevy::prelude::*;
+
+use crate::MouseTrackingSystem;
+
+/// Plugin that tracks the mouse location.
+#[non_exhaustive]
+pub enum MousePosPlugin {
+    /// Track the mouse without transforming it to worldspace.
+    None,
+    /// Transform the mouse position into worldspace, using an orthographic camera.
+    Orthographic,
+}
+
+impl Plugin for MousePosPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(MousePos::default());
+        app.add_system_to_stage(
+            CoreStage::First,
+            update_pos.label(MouseTrackingSystem::ScreenPos),
+        );
+        //
+        // Optionally add features for converting to worldspace.
+        match *self {
+            MousePosPlugin::None => {}
+            MousePosPlugin::Orthographic => {
+                app.insert_resource(MousePosWorld::default());
+                app.add_system_to_stage(
+                    CoreStage::First,
+                    update_pos_ortho.label(MouseTrackingSystem::WorldPos),
+                );
+            }
+        }
+    }
+}
 
 /// The location of the mouse in screenspace.
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -30,10 +52,7 @@ impl Display for MousePos {
     }
 }
 
-fn update_pos(
-    mut mouse_loc: ResMut<MousePos>,
-    mut cursor_moved: EventReader<CursorMoved>,
-) {
+fn update_pos(mut mouse_loc: ResMut<MousePos>, mut cursor_moved: EventReader<CursorMoved>) {
     for event in cursor_moved.iter() {
         mouse_loc.0 = event.position;
     }
@@ -67,31 +86,6 @@ fn update_pos_ortho(
             .next()
             .expect("could not find an orthographic camera");
         mouse_world.0 = camera
-                .mul_vec3(event.position.extend(0.0) + Vec3::new(proj.left, proj.bottom, proj.near));
-    }
-}
-
-/// Plugin that tracks the mouse location.
-#[non_exhaustive]
-pub enum MousePosPlugin {
-    /// Track the mouse without transforming it to worldspace.
-    None,
-    /// Transform the mouse position into worldspace, using an orthographic camera.
-    Orthographic,
-}
-
-impl Plugin for MousePosPlugin {
-    fn build(&self, app: &mut App) {
-        app.insert_resource(MousePos::default())
-            .add_system(update_pos.system());
-        //
-        // Optionally add features for converting to worldspace.
-        match *self {
-            MousePosPlugin::None => {}
-            MousePosPlugin::Orthographic => {
-                app.insert_resource(MousePosWorld::default())
-                    .add_system_to_stage(CoreStage::Update, update_pos_ortho.system());
-            }
-        }
+            .mul_vec3(event.position.extend(0.0) + Vec3::new(proj.left, proj.bottom, proj.near));
     }
 }
