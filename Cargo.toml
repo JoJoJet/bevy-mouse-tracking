@@ -14,4 +14,4 @@ keywords = ["gamedev", "bevy", "mouse", "input"]
 version = "0.6.*"
 path = "../bevy"
 default-features = false
-features = [ "render" ]
+features = [ "render", "png", "bevy_winit" ]
