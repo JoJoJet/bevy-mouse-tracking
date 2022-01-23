@@ -44,7 +44,6 @@ fn setup(
         })
         .insert(Cursor);
 
-
     // Hud
     let font = asset_server.load("FiraMono-Medium.ttf");
     let style = TextStyle {
