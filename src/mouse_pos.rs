@@ -5,39 +5,31 @@ use bevy::prelude::*;
 use crate::MouseTrackingSystem;
 
 /// Plugin that tracks the mouse location.
-#[non_exhaustive]
-pub enum MousePosPlugin {
-    /// Track the mouse without transforming it to worldspace.
-    None,
-    /// Transform the mouse position into worldspace, using an orthographic camera.
-    Orthographic,
-}
+pub struct MousePosPlugin;
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(MousePos::default());
+        // system to add mouse tracking components.
+        // runs once after startup, and then once at the end of each frame.
+        app.add_startup_system_to_stage(StartupStage::PostStartup, add_pos_components);
+        app.add_system_to_stage(CoreStage::Last, add_pos_components);
+
         app.add_system_to_stage(
             CoreStage::First,
             update_pos.label(MouseTrackingSystem::ScreenPos),
         );
-        //
-        // Optionally add features for converting to worldspace.
-        match *self {
-            MousePosPlugin::None => {}
-            MousePosPlugin::Orthographic => {
-                app.insert_resource(MousePosWorld::default());
-                app.add_system_to_stage(
-                    CoreStage::First,
-                    update_pos_ortho.label(MouseTrackingSystem::WorldPos),
-                );
-            }
-        }
+        app.add_system_to_stage(
+            CoreStage::First,
+            update_pos_ortho
+                .label(MouseTrackingSystem::WorldPos)
+                .after(MouseTrackingSystem::ScreenPos),
+        );
     }
 }
 
 /// The location of the mouse in screenspace.
-#[derive(Clone, Copy, PartialEq, Default, Debug)]
-pub struct MousePos(pub Vec2);
+#[derive(Debug, Clone, Copy, PartialEq, Component)]
+pub struct MousePos(Vec2);
 
 impl Deref for MousePos {
     type Target = Vec2;
@@ -52,15 +44,42 @@ impl Display for MousePos {
     }
 }
 
-fn update_pos(mut mouse_loc: ResMut<MousePos>, mut cursor_moved: EventReader<CursorMoved>) {
-    for event in cursor_moved.iter() {
-        mouse_loc.0 = event.position;
+fn add_pos_components(
+    cameras1: Query<(Entity, &Camera), Without<MousePos>>,
+    cameras2: Query<Entity, (With<Camera>, Without<MousePosWorld>)>,
+    windows: Res<Windows>,
+    mut commands: Commands,
+) {
+    for (e, camera) in cameras1.iter() {
+        // get the initial position of the cursor.
+        let position = windows
+            .get(camera.window)
+            .and_then(|w| w.cursor_position())
+            .unwrap_or_default();
+        commands.entity(e).insert(MousePos(position));
+    }
+    for cam in cameras2.iter() {
+        commands
+            .entity(cam)
+            .insert(MousePosWorld(Default::default()));
+    }
+}
+
+fn update_pos(
+    mut movement: EventReader<CursorMoved>,
+    mut cameras: Query<(&Camera, &mut MousePos)>,
+) {
+    for &CursorMoved { id, position } in movement.iter() {
+        // find all cameras corresponding to the window on which the cursor moved.
+        for (_, mut pos) in cameras.iter_mut().filter(|(c, ..)| c.window == id) {
+            pos.0 = position;
+        }
     }
 }
 
 /// The location of the mouse in worldspace.
-#[derive(Clone, Copy, PartialEq, Default, Debug)]
-pub struct MousePosWorld(pub Vec3);
+#[derive(Debug, Clone, Copy, PartialEq, Component)]
+pub struct MousePosWorld(Vec3);
 
 impl Display for MousePosWorld {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -76,16 +95,14 @@ impl Deref for MousePosWorld {
 }
 
 fn update_pos_ortho(
-    mut mouse_world: ResMut<MousePosWorld>,
-    mut cursor_moved: EventReader<CursorMoved>,
-    cameras: Query<(&GlobalTransform, &OrthographicProjection), With<Camera>>,
+    mut tracking: Query<(Entity, &mut MousePosWorld, &MousePos), Changed<MousePos>>,
+    cameras: Query<(&GlobalTransform, &OrthographicProjection)>,
 ) {
-    if let Some(event) = cursor_moved.iter().next_back() {
+    for (camera, mut world, screen) in tracking.iter_mut() {
         let (camera, proj) = cameras
-            .iter()
-            .next()
-            .expect("could not find an orthographic camera");
-        mouse_world.0 = camera
-            .mul_vec3(event.position.extend(0.0) + Vec3::new(proj.left, proj.bottom, proj.near));
+            .get(camera)
+            .expect("only orthographic cameras are supported");
+        world.0 =
+            camera.mul_vec3(screen.0.extend(0.0) + Vec3::new(proj.left, proj.bottom, proj.near));
     }
 }
