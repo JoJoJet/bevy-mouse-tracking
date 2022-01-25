@@ -5,25 +5,52 @@ use bevy::prelude::*;
 use crate::MouseTrackingSystem;
 
 /// Plugin that tracks the mouse location.
-pub struct MousePosPlugin;
+pub enum MousePosPlugin {
+    /// Configuration for apps that have a single main camera.
+    /// Provides global Resources for [`MousePos`] and [`MousePosWorld`].
+    SingleCamera,
+    /// Configuration for apps that have multiple cameras which must be handled separately.
+    MultiCamera,
+}
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
-        // system to add mouse tracking components.
-        // runs once after startup, and then once at the end of each frame.
-        app.add_startup_system_to_stage(StartupStage::PostStartup, add_pos_components);
-        app.add_system_to_stage(CoreStage::Last, add_pos_components);
+        // System to add mouse tracking components.
+        // Runs once at the end of each frame. This means that no cameras will have
+        // mouse tracking components until after the first frame.
+        // This might cause some issues, but it's probably for the best since,
+        // during the first frame, nothing has been rendered yet.
+        app.add_system_to_stage(CoreStage::PostUpdate, add_pos_components);
 
-        app.add_system_to_stage(
-            CoreStage::First,
-            update_pos.label(MouseTrackingSystem::ScreenPos),
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, StageLabel)]
+        struct MouseStage;
+
+        app.add_stage_before(
+            CoreStage::PreUpdate,
+            MouseStage,
+            SystemStage::single_threaded(),
         );
+
+        app.add_system_to_stage(MouseStage, update_pos.label(MouseTrackingSystem::ScreenPos));
         app.add_system_to_stage(
-            CoreStage::First,
+            MouseStage,
             update_pos_ortho
                 .label(MouseTrackingSystem::WorldPos)
                 .after(MouseTrackingSystem::ScreenPos),
         );
+
+        match self {
+            Self::SingleCamera => {
+                app.insert_resource(MousePos(Default::default()));
+                app.insert_resource(MousePosWorld(Default::default()));
+                //
+                app.add_system_to_stage(
+                    MouseStage,
+                    update_main_camera.after(MouseTrackingSystem::WorldPos),
+                );
+            }
+            Self::MultiCamera => {}
+        }
     }
 }
 
@@ -105,4 +132,38 @@ fn update_pos_ortho(
         world.0 =
             camera.mul_vec3(screen.0.extend(0.0) + Vec3::new(proj.left, proj.bottom, proj.near));
     }
+}
+
+/// Marker component for the primary camera in the world.
+/// If only one camera exists, this is optional.
+#[derive(Debug, Clone, Copy, Component)]
+pub struct MainCamera;
+
+fn update_main_camera(
+    mut screen_res: ResMut<MousePos>,
+    mut world_res: ResMut<MousePosWorld>,
+    cameras: Query<(&MousePos, &MousePosWorld, Option<&MainCamera>)>,
+) {
+    use bevy::ecs::system::QuerySingleError;
+    let (screen, world, ..) = match cameras.get_single() {
+        Ok(x) => x,
+        Err(QuerySingleError::NoEntities(_)) => {
+            // this is okay, try again next frame.
+            return;
+        }
+        Err(QuerySingleError::MultipleEntities(_)) => {
+            // try to disambiguate
+            let mut mains = cameras.iter().filter(|(.., main)| main.is_some());
+
+            let main = mains.next().unwrap_or_else(||panic!("cannot identify main camera -- consider adding the MainCamera component to one of the cameras") );
+            if mains.next().is_some() {
+                panic!("only one camera may be marked with the MainCamera component");
+            }
+            main
+
+            // ambiguous! very bad
+        }
+    };
+    screen_res.0 = screen.0;
+    world_res.0 = world.0;
 }

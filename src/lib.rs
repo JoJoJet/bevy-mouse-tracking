@@ -103,7 +103,7 @@ pub enum MouseTrackingSystem {
 }
 
 mod mouse_pos;
-pub use mouse_pos::{MousePos, MousePosPlugin, MousePosWorld};
+pub use mouse_pos::{MainCamera, MousePos, MousePosPlugin, MousePosWorld};
 
 mod mouse_motion;
 pub use bevy::input::mouse::MouseMotion;
