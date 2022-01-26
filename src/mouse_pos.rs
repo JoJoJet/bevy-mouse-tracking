@@ -26,18 +26,9 @@ impl Plugin for MousePosPlugin {
         // during the first frame, nothing has been rendered yet.
         app.add_system_to_stage(CoreStage::PostUpdate, add_pos_components);
 
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, StageLabel)]
-        struct MouseStage;
-
-        app.add_stage_before(
-            CoreStage::PreUpdate,
-            MouseStage,
-            SystemStage::single_threaded(),
-        );
-
-        app.add_system_to_stage(MouseStage, update_pos.label(MouseSystem::ScreenPos));
+        app.add_system_to_stage(CoreStage::First, update_pos.label(MouseSystem::ScreenPos));
         app.add_system_to_stage(
-            MouseStage,
+            CoreStage::First,
             update_pos_ortho
                 .label(MouseSystem::WorldPos)
                 .after(MouseSystem::ScreenPos),
@@ -49,7 +40,7 @@ impl Plugin for MousePosPlugin {
                 app.insert_resource(MousePosWorld(Default::default()));
                 //
                 app.add_system_to_stage(
-                    MouseStage,
+                    CoreStage::First,
                     update_main_camera.after(MouseSystem::WorldPos),
                 );
             }
@@ -58,7 +49,9 @@ impl Plugin for MousePosPlugin {
     }
 }
 
-/// The location of the mouse in screenspace.
+/// The location of the mouse in screenspace.  
+/// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
+/// on this should come after `CoreStage::First`.
 #[derive(Debug, Clone, Copy, PartialEq, Component)]
 pub struct MousePos(Vec2);
 
@@ -108,7 +101,9 @@ fn update_pos(
     }
 }
 
-/// The location of the mouse in worldspace.
+/// The location of the mouse in worldspace.  
+/// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
+/// on this should come after `CoreStage::First`.
 #[derive(Debug, Clone, Copy, PartialEq, Component)]
 pub struct MousePosWorld(Vec3);
 
