@@ -17,6 +17,7 @@ impl Plugin for MousePosPlugin {
         enum MouseSystem {
             ScreenPos,
             WorldPos,
+            FindMain,
         }
 
         // System to add mouse tracking components.
@@ -38,10 +39,22 @@ impl Plugin for MousePosPlugin {
             Self::SingleCamera => {
                 app.insert_resource(MousePos(Default::default()));
                 app.insert_resource(MousePosWorld(Default::default()));
+                app.init_resource::<MainCameraStore>();
+
+                // system to update the current main camera
+                app.add_system_set_to_stage(
+                    CoreStage::First,
+                    SystemSet::new()
+                        .label(MouseSystem::FindMain)
+                        .with_run_criteria(main_camera_changed)
+                        .with_system(find_main_camera),
+                );
                 //
                 app.add_system_to_stage(
                     CoreStage::First,
-                    update_main_camera.after(MouseSystem::WorldPos),
+                    update_resources
+                        .after(MouseSystem::WorldPos)
+                        .after(MouseSystem::FindMain),
                 );
             }
             Self::MultiCamera => {}
@@ -138,31 +151,65 @@ fn update_pos_ortho(
 #[derive(Debug, Clone, Copy, Component)]
 pub struct MainCamera;
 
-fn update_main_camera(
-    mut screen_res: ResMut<MousePos>,
-    mut world_res: ResMut<MousePosWorld>,
-    cameras: Query<(&MousePos, &MousePosWorld, Option<&MainCamera>)>,
+/// Resource that caches the main camera, so it doesn't need to be looked up every frame.
+/// This is an implementation detail and thus should not be part of the public api.
+#[derive(Debug, Default)]
+struct MainCameraStore(Option<Entity>);
+
+// only run when the candidates for the main camera change.
+use bevy::ecs::schedule::ShouldRun;
+fn main_camera_changed(
+    cam: Query<Entity, Added<Camera>>,
+    main: Query<Entity, Added<MainCamera>>,
+) -> ShouldRun {
+    if !cam.is_empty() || !main.is_empty() {
+        ShouldRun::Yes
+    } else {
+        ShouldRun::No
+    }
+}
+
+fn find_main_camera(
+    mut main_store: ResMut<MainCameraStore>,
+    cameras: Query<(Entity, Option<&MainCamera>), With<Camera>>,
 ) {
     use bevy::ecs::system::QuerySingleError;
-    let (screen, world, ..) = match cameras.get_single() {
-        Ok(x) => x,
+    main_store.0 = match cameras.get_single() {
+        Ok((e, ..)) => Some(e),
         Err(QuerySingleError::NoEntities(_)) => {
-            // this is okay, try again next frame.
-            return;
+            // no main camera exists
+            None
         }
         Err(QuerySingleError::MultipleEntities(_)) => {
             // try to disambiguate
-            let mut mains = cameras.iter().filter(|(.., main)| main.is_some());
-
-            let main = mains.next().unwrap_or_else(||panic!("cannot identify main camera -- consider adding the MainCamera component to one of the cameras") );
+            let mut mains = cameras.iter().filter_map(|(e, main)| main.and(Some(e)));
+            let main = mains.next().unwrap_or_else(|| {
+                panic!("cannot identify main camera -- consider adding the MainCamera component to one of the cameras")
+            });
             if mains.next().is_some() {
                 panic!("only one camera may be marked with the MainCamera component");
             }
-            main
-
-            // ambiguous! very bad
+            Some(main)
         }
+    }
+}
+
+fn update_resources(
+    mut screen_res: ResMut<MousePos>,
+    mut world_res: ResMut<MousePosWorld>,
+    main: Res<MainCameraStore>,
+    screen: Query<&MousePos, Changed<MousePos>>,
+    world: Query<&MousePosWorld, Changed<MousePosWorld>>,
+) {
+    let main = match main.0 {
+        Some(m) => m,
+        None => return, // no main camera, try again next frame
     };
-    screen_res.0 = screen.0;
-    world_res.0 = world.0;
+    // update the global resources if the components for the main camera changed.
+    if let Ok(screen) = screen.get(main) {
+        screen_res.0 = screen.0;
+    }
+    if let Ok(world) = world.get(main) {
+        world_res.0 = world.0;
+    }
 }
