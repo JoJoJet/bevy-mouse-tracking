@@ -20,21 +20,15 @@ fn main() {
         .run();
 }
 
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window: Res<WindowDescriptor>,
-) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<WindowDescriptor>) {
     // Spawn a Camera
-    commands
-        .spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     // Reference for the origin
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("origin.png"),
-            ..Default::default()
-        });
+    commands.spawn_bundle(SpriteBundle {
+        texture: asset_server.load("origin.png"),
+        ..Default::default()
+    });
 
     // Hud
     let font = asset_server.load("FiraMono-Medium.ttf");
@@ -48,10 +42,7 @@ fn setup(
         horizontal: HorizontalAlign::Left,
     };
     let (win_width, win_height) = (window.width, window.height);
-    let (hud_x, hud_y) = (
-        win_width / 2. * -1.,
-        win_height / 2.,
-    );
+    let (hud_x, hud_y) = (win_width / 2. * -1., win_height / 2.);
     let translation = Vec3::new(hud_x, hud_y, 0.);
     let transform = Transform::from_translation(translation);
     let value = "Mouse: (-, -)".to_string();
@@ -65,15 +56,10 @@ fn setup(
         .insert(Hud);
 }
 
-fn run(
-    mouse_pos: Res<MousePos>,
-    mut hud_text: Query<&mut Text, With<Hud>>,
-) {
-    let hud_value = format!("Mouse: ({}, {})",
-        mouse_pos.x, mouse_pos.y,
-    );
+fn run(mouse_pos: Res<MousePos>, mut hud_text: Query<&mut Text, With<Hud>>) {
+    let hud_value = format!("Mouse: ({}, {})", mouse_pos.x, mouse_pos.y,);
 
-    if let Some(mut hud_text)= hud_text.iter_mut().next() {
+    if let Some(mut hud_text) = hud_text.iter_mut().next() {
         hud_text.sections.first_mut().unwrap().value = hud_value.clone();
     } else {
         println!("No Hud Found");
