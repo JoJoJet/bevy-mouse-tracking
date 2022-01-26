@@ -2,8 +2,6 @@ use std::{fmt::Display, ops::Deref};
 
 use bevy::prelude::*;
 
-use crate::MouseTrackingSystem;
-
 /// Plugin that tracks the mouse location.
 pub enum MousePosPlugin {
     /// Configuration for apps that have a single main camera.
@@ -15,6 +13,12 @@ pub enum MousePosPlugin {
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
+        enum MouseSystem {
+            ScreenPos,
+            WorldPos,
+        }
+
         // System to add mouse tracking components.
         // Runs once at the end of each frame. This means that no cameras will have
         // mouse tracking components until after the first frame.
@@ -31,12 +35,12 @@ impl Plugin for MousePosPlugin {
             SystemStage::single_threaded(),
         );
 
-        app.add_system_to_stage(MouseStage, update_pos.label(MouseTrackingSystem::ScreenPos));
+        app.add_system_to_stage(MouseStage, update_pos.label(MouseSystem::ScreenPos));
         app.add_system_to_stage(
             MouseStage,
             update_pos_ortho
-                .label(MouseTrackingSystem::WorldPos)
-                .after(MouseTrackingSystem::ScreenPos),
+                .label(MouseSystem::WorldPos)
+                .after(MouseSystem::ScreenPos),
         );
 
         match self {
@@ -46,7 +50,7 @@ impl Plugin for MousePosPlugin {
                 //
                 app.add_system_to_stage(
                     MouseStage,
-                    update_main_camera.after(MouseTrackingSystem::WorldPos),
+                    update_main_camera.after(MouseSystem::WorldPos),
                 );
             }
             Self::MultiCamera => {}
