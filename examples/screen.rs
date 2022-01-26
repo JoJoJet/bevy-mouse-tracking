@@ -13,7 +13,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(WindowDescriptor::default())
-        .add_plugin(MousePosPlugin::None)
+        .add_plugin(MousePosPlugin::SingleCamera)
         .add_startup_system(setup)
         .add_system(bevy::input::system::exit_on_esc_system.system())
         .add_system(run)
