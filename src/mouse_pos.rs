@@ -88,12 +88,14 @@ fn add_pos_components(
     mut commands: Commands,
 ) {
     for (e, camera) in cameras1.iter() {
-        // get the initial position of the cursor.
-        let position = windows
-            .get(camera.window)
-            .and_then(|w| w.cursor_position())
-            .unwrap_or_default();
-        commands.entity(e).insert(MousePos(position));
+        if let RenderTarget::Window(window_id) = camera.target {
+            // get the initial position of the cursor.
+            let position = windows
+                .get(window_id)
+                .and_then(|w| w.cursor_position())
+                .unwrap_or_default();
+            commands.entity(e).insert(MousePos(position));
+        }
     }
     for cam in cameras2.iter() {
         commands
@@ -108,7 +110,7 @@ fn update_pos(
 ) {
     for &CursorMoved { id, position } in movement.iter() {
         // find all cameras corresponding to the window on which the cursor moved.
-        for (_, mut pos) in cameras.iter_mut().filter(|(c, ..)| c.window == id) {
+        for (_, mut pos) in cameras.iter_mut().filter(|(c, ..)| c.target == RenderTarget::Window(id)) {
             pos.0 = position;
         }
     }
@@ -158,6 +160,8 @@ struct MainCameraStore(Option<Entity>);
 
 // only run when the candidates for the main camera change.
 use bevy::ecs::schedule::ShouldRun;
+use bevy::render::camera::RenderTarget;
+
 fn main_camera_changed(
     cam: Query<Entity, Added<Camera>>,
     main: Query<Entity, Added<MainCamera>>,
