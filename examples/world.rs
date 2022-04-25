@@ -15,7 +15,7 @@ fn main() {
         .insert_resource(WindowDescriptor::default())
         .add_plugin(MousePosPlugin::SingleCamera)
         .add_startup_system(setup)
-        .add_system(bevy::input::system::exit_on_esc_system.system())
+        .add_system(bevy::input::system::exit_on_esc_system)
         .add_system(run)
         .run();
 }
