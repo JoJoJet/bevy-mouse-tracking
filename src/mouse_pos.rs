@@ -143,8 +143,8 @@ fn update_pos_ortho(
         let (camera, proj) = cameras
             .get(camera)
             .expect("only orthographic cameras are supported");
-        world.0 =
-            camera.mul_vec3(screen.0.extend(0.0) + Vec3::new(proj.left, proj.bottom, proj.near));
+        let offset = Vec2::new(proj.left, proj.bottom);
+        world.0 = camera.mul_vec3((screen.0 + offset).extend(0.0)) * proj.scale;
     }
 }
 
