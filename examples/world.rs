@@ -22,7 +22,9 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<WindowDescriptor>) {
     // Spawn a Camera
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    let mut camera_bundle = OrthographicCameraBundle::new_2d();
+    camera_bundle.orthographic_projection.scale = 0.5; // works fine with non-unit scaling.
+    commands.spawn_bundle(camera_bundle);
 
     // Reference for the origin
     commands.spawn_bundle(SpriteBundle {
