@@ -1,5 +1,7 @@
 # bevy_mouse_tracking_plugin
 
+<!-- cargo-rdme start -->
+
 [![CI](https://github.com/JoJoJet/bevy-mouse-tracking/actions/workflows/ci.yml/badge.svg)](https://github.com/JoJoJet/bevy-mouse-tracking/actions/workflows/ci.yml)
 [![bevy_mouse_tracking on crates.io](https://img.shields.io/crates/v/bevy_mouse_tracking_plugin.svg)](https://crates.io/crates/bevy_mouse_tracking_plugin)
 [![bevy_mouse_tracking docs](https://img.shields.io/badge/docs-docs.rs-orange.svg)](https://docs.rs/bevy_mouse_tracking_plugin)
@@ -58,7 +60,7 @@ fn dbg_world(mouse: Res<MousePosWorld>) {
 }
 ```
 
-This will print the world-space location of the mouse on every frame.
+This will print the world-space location of the mouse on every frame.  
 Note that this is only supported for two-dimensional, orthographic camera,
 but pull requests for 3D support are welcome!
 
@@ -82,7 +84,7 @@ fn setup(mut commands: Commands) {
 
 This panics with the following output:
 
-```
+```text
 thread 'main' panicked at 'cannot identify main camera -- consider adding the MainCamera component to one of the cameras', src\mouse_pos.rs:163:13
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
@@ -117,7 +119,7 @@ fn dbg_for_each(mouse_pos: Query<&MousePosWorld>) {
 }
 ```
 
-If you want the mouse position for a specific camera, you can add query filters as always.
+If you want the mouse position for a specific camera, you can add query filters as always.  
 Note that as of `bevy 0.6`, the only way to tell the difference between a UI camera and
 an orthographic camera is by checking for the [`Frustum`] component.
 
@@ -137,7 +139,7 @@ fn dbg_ui_pos(mouse_pos: Query<&MousePosWorld, Without<Frustum>>) {
 ### No main camera
 
 Let's say you have multiple cameras in your app, and you want to treat them all equally,
-without declaring any one of them as the main camera.
+without declaring any one of them as the main camera.  
 Change the plugin to this:
 
 ```rust
@@ -150,7 +152,7 @@ App::new()
 ```
 
 Now, you can add as many cameras as you want, without having to worry about marking any
-of them as the main camera.
+of them as the main camera.  
 Note that `MousePos` and `MousePosWorld` will no longer be accessible as global resources
 -- you can only access them by `Query`ing camera entities.
 
@@ -166,11 +168,13 @@ The motion can be accessed from any system in a [`MouseMotion`] resource.
 As a final aside: the name of this crate is intentionally verbose.
 This is because I didn't want to steal a crate name, especially since
 it is very likely that this crate will eventually be made redundant by
-future updates to `bevy`.
+future updates to `bevy`.  
 I recommend renaming the crate in your `Cargo.toml`:
 ```toml
 [dependencies]
 mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }
 ```
+
+<!-- cargo-rdme end -->
 
 License: MIT
