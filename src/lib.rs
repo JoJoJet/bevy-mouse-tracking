@@ -2,8 +2,8 @@
 //! You gotta use [`Events`], and [`EventReader`]s, and even then, they only
 //! get called when the mouse actually *moves*.
 //!
-//! [`Events`]: bevy::app::Events
-//! [`EventReader`]: bevy::app::EventReader
+//! [`Events`]: bevy::ecs::event::Events
+//! [`EventReader`]: bevy::ecs::event::EventReader
 //!
 //! This crate aims to make this as easy as possible, by providing a
 //! static [resource](bevy::ecs::system::Res) that tracks the mouse position every frame.
