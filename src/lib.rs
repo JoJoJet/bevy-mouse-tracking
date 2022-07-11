@@ -201,7 +201,7 @@
 //! it is very likely that this crate will eventually be made redundant by
 //! future updates to `bevy`.  
 //! I recommend renaming the crate in your `Cargo.toml`:
-//! ```text
+//! ```toml
 //! [dependencies]
 //! mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }
 //! ```

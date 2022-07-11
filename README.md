@@ -8,8 +8,8 @@ Tracking the mouse in `bevy` is kind of annoying.
 You gotta use [`Events`], and [`EventReader`]s, and even then, they only
 get called when the mouse actually *moves*.
 
-[`Events`]: bevy::app::Events
-[`EventReader`]: bevy::app::EventReader
+[`Events`]: bevy::ecs::event::Events
+[`EventReader`]: bevy::ecs::event::EventReader
 
 This crate aims to make this as easy as possible, by providing a
 static [resource](bevy::ecs::system::Res) that tracks the mouse position every frame.
@@ -168,7 +168,7 @@ This is because I didn't want to steal a crate name, especially since
 it is very likely that this crate will eventually be made redundant by
 future updates to `bevy`.
 I recommend renaming the crate in your `Cargo.toml`:
-```
+```toml
 [dependencies]
 mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }
 ```
