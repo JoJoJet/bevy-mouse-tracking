@@ -110,7 +110,10 @@ fn update_pos(
 ) {
     for &CursorMoved { id, position } in movement.iter() {
         // find all cameras corresponding to the window on which the cursor moved.
-        for (_, mut pos) in cameras.iter_mut().filter(|(c, ..)| c.target == RenderTarget::Window(id)) {
+        for (_, mut pos) in cameras
+            .iter_mut()
+            .filter(|(c, ..)| c.target == RenderTarget::Window(id))
+        {
             pos.0 = position;
         }
     }
