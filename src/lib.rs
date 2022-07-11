@@ -17,11 +17,10 @@
 //! ```
 //! use bevy::prelude::*;
 //! use bevy_mouse_tracking_plugin::MousePosPlugin;
-//! fn main() {
-//!     App::new()
-//!         .add_plugins(DefaultPlugins)
-//!         .add_plugin(MousePosPlugin::SingleCamera);
-//! }
+//!
+//! App::new()
+//!     .add_plugins(DefaultPlugins)
+//!     .add_plugin(MousePosPlugin::SingleCamera);
 //! ```
 //!
 //! Now, you can access the resource in your [`System`]s:
@@ -39,12 +38,11 @@
 //! ```
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::MousePosPlugin;
-//! # fn main() {
-//! #    App::new()
-//! #        .add_plugins(DefaultPlugins)
-//!         .add_plugin(MousePosPlugin::SingleCamera)
-//!         .add_system(dbg_mouse.system());
-//! # }
+//! # App::new()
+//! #   .add_plugins(DefaultPlugins)
+//!     .add_plugin(MousePosPlugin::SingleCamera)
+//!     .add_system(dbg_mouse);
+//!
 //! # fn dbg_mouse() { }
 //! ```
 //!
@@ -72,13 +70,13 @@
 //! ```should_panic
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::MousePosPlugin;
-//! fn main() {
-//!     App::new()
-//!         .add_plugins(DefaultPlugins)
-//!         .add_plugin(MousePosPlugin::SingleCamera)
-//!         .add_startup_system(setup)
-//!         .run();
-//! }
+//!
+//! App::new()
+//!     .add_plugins(DefaultPlugins)
+//!     .add_plugin(MousePosPlugin::SingleCamera)
+//!     .add_startup_system(setup)
+//!     .run();
+//!
 //! fn setup(mut commands: Commands) {
 //!     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 //!     commands.spawn_bundle(UiCameraBundle::default());
@@ -98,23 +96,15 @@
 //! ```
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MainCamera};
-//! # fn main() {
-//! #   App::new()
-//! #       .add_plugins(DefaultPlugins)
-//! #       .add_plugin(MousePosPlugin::SingleCamera)
-//! #       .add_startup_system(setup)
-//! #       .add_system(exit_if_successful)
-//! #       .run();
-//! # }
+//! # App::new()
+//! #   .add_plugins(DefaultPlugins)
+//! #   .add_plugin(MousePosPlugin::SingleCamera)
+//! #   .add_startup_system(setup)
+//! #   .update();
 //! # fn setup(mut commands: Commands) {
 //!     commands.spawn_bundle(OrthographicCameraBundle::new_2d())
 //!         .insert(MainCamera); // added this line
 //!     commands.spawn_bundle(UiCameraBundle::default());
-//! # }
-//! # fn exit_if_successful(time: Res<Time>) {
-//! #   if time.seconds_since_startup() > 1.0 {
-//! #       std::process::exit(0)
-//! #   }
 //! # }
 //! ```
 //!
@@ -127,13 +117,13 @@
 //! ```
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MainCamera, MousePosWorld};
-//! fn main() {
-//!     App::new()
-//!         // plugins omitted...
-//! #       .add_plugins(DefaultPlugins)
-//! #       .add_plugin(MousePosPlugin::SingleCamera)
-//!         .add_system(dbg_for_each);
-//! }
+//!
+//! App::new()
+//!     // plugins omitted...
+//! #   .add_plugins(DefaultPlugins)
+//! #   .add_plugin(MousePosPlugin::SingleCamera)
+//!     .add_system(dbg_for_each);
+//!
 //! fn dbg_for_each(mouse_pos: Query<&MousePosWorld>) {
 //!     for pos in mouse_pos.iter() {
 //!         // This prints the mouse position twice per frame:
@@ -152,12 +142,12 @@
 //! ```
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MainCamera, MousePosWorld};
-//! # fn main() {
-//! #   App::new()
-//! #       .add_plugins(DefaultPlugins)
-//! #       .add_plugin(MousePosPlugin::SingleCamera)
-//! #       .add_system(dbg_ui_pos);
-//! # }
+//!
+//! # App::new()
+//! #   .add_plugins(DefaultPlugins)
+//! #   .add_plugin(MousePosPlugin::SingleCamera)
+//! #   .add_system(dbg_ui_pos);
+//!
 //! use bevy::render::primitives::Frustum;
 //! fn dbg_ui_pos(mouse_pos: Query<&MousePosWorld, Without<Frustum>>) {
 //!     // query for the UI camera, which doesn't have a Frustum component.
@@ -175,23 +165,16 @@
 //! ```
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::{MousePosPlugin};
-//! fn main() {
-//!     App::new()
-//!         .add_plugins(DefaultPlugins)
-//!         .add_plugin(MousePosPlugin::MultiCamera) // SingleCamera -> MultiCamera
-//!         .add_startup_system(setup)
-//!         // ...
-//! #       .add_system(exit_if_successful)
-//! #       .run();
-//! }
+//! App::new()
+//!     .add_plugins(DefaultPlugins)
+//!     .add_plugin(MousePosPlugin::MultiCamera) // SingleCamera -> MultiCamera
+//!     .add_startup_system(setup)
+//!     // ...
+//! #   .update();
+//!
 //! # fn setup(mut commands: Commands) {
 //! #   commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 //! #   commands.spawn_bundle(UiCameraBundle::default());
-//! # }
-//! # fn exit_if_successful(time: Res<Time>) {
-//! #   if time.seconds_since_startup() > 1.0 {
-//! #       std::process::exit(0)
-//! #   }
 //! # }
 //! ```
 //!
