@@ -59,7 +59,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
 
     commands
         .spawn_bundle(Text2dBundle {
-            text: Text::with_section(value, style.clone(), alignment),
+            text: Text::from_section(value, style.clone()).with_alignment(alignment),
             transform,
             ..Default::default()
         })
