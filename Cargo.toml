@@ -11,11 +11,13 @@ keywords = ["gamedev", "bevy", "mouse", "input"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-version = "0.7.*"
+git = "https://github.com/bevyengine/bevy/"
+branch = "main"
 default-features = false
 features = [ "render" ]
 
 [dev-dependencies.bevy]
-version = "0.7.*"
+git = "https://github.com/bevyengine/bevy/"
+branch = "main"
 default-features = false
 features = [ "render", "png", "bevy_winit" ]
