@@ -147,7 +147,10 @@ fn update_pos_ortho(
             .get(camera)
             .expect("only orthographic cameras are supported");
         let offset = Vec2::new(proj.left, proj.bottom);
-        world.0 = camera.mul_vec3((screen.0 + offset).extend(0.0)) * proj.scale;
+
+        // Must multiply by projection scale before applying camera global transform
+        // Otherwise you get weird offset mouse positions when both scaling and panning the camera.
+        world.0 = camera.mul_vec3(((screen.0 + offset) * proj.scale).extend(0.0));
     }
 }
 
