@@ -137,29 +137,6 @@
 //! }
 //! ```
 //!
-//! If you want the mouse position for a specific camera, you can add query filters as always.  
-//! Note that as of `bevy 0.6`, the only way to tell the difference between a UI camera and
-//! an orthographic camera is by checking for the [`Frustum`] component.
-//!
-//! [`Frustum`]: bevy::render::primitives::Frustum
-//!
-//! ```
-//! # use bevy::prelude::*;
-//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MainCamera, MousePosWorld};
-//!
-//! # App::new()
-//! #   .add_plugins(DefaultPlugins)
-//! #   .add_plugin(MousePosPlugin::SingleCamera)
-//! #   .add_system(dbg_ui_pos);
-//!
-//! use bevy::render::primitives::Frustum;
-//! fn dbg_ui_pos(mouse_pos: Query<&MousePosWorld, Without<Frustum>>) {
-//!     // query for the UI camera, which doesn't have a Frustum component.
-//!     let pos = mouse_pos.single();
-//!     eprintln!("{}", *pos);
-//! }
-//! ```
-//!
 //! ## No main camera
 //!
 //! Let's say you have multiple cameras in your app, and you want to treat them all equally,
