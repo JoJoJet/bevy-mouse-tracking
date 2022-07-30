@@ -15,15 +15,15 @@ fn main() {
         .insert_resource(WindowDescriptor::default())
         .add_plugin(MousePosPlugin::SingleCamera)
         .add_startup_system(setup)
-        .add_system(bevy::input::system::exit_on_esc_system)
+        .add_system(bevy::window::close_on_esc)
         .add_system(run)
         .run();
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<WindowDescriptor>) {
     // Spawn a Camera
-    let mut camera_bundle = OrthographicCameraBundle::new_2d();
-    camera_bundle.orthographic_projection.scale = 0.5; // works fine with non-unit scaling.
+    let mut camera_bundle = Camera2dBundle::default();
+    camera_bundle.projection.scale = 0.5; // works fine with non-unit scaling.
     commands.spawn_bundle(camera_bundle);
 
     // Reference for the origin
@@ -59,7 +59,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
 
     commands
         .spawn_bundle(Text2dBundle {
-            text: Text::with_section(value, style.clone(), alignment),
+            text: Text::from_section(value, style).with_alignment(alignment),
             transform,
             ..Default::default()
         })
@@ -78,7 +78,7 @@ fn run(
     );
 
     if let Some(mut hud_text) = hud_text.iter_mut().next() {
-        hud_text.sections.first_mut().unwrap().value = hud_value.clone();
+        hud_text.sections.first_mut().unwrap().value = hud_value;
     }
 
     if let Some(mut cursor_transform) = cursor.iter_mut().next() {

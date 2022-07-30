@@ -183,7 +183,7 @@ fn find_main_camera(
     mut main_store: ResMut<MainCameraStore>,
     cameras: Query<(Entity, Option<&MainCamera>), With<Camera>>,
 ) {
-    use bevy::ecs::system::QuerySingleError;
+    use bevy::ecs::query::QuerySingleError;
     main_store.0 = match cameras.get_single() {
         Ok((e, ..)) => Some(e),
         Err(QuerySingleError::NoEntities(_)) => {

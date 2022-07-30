@@ -15,14 +15,14 @@ fn main() {
         .insert_resource(WindowDescriptor::default())
         .add_plugin(MousePosPlugin::SingleCamera)
         .add_startup_system(setup)
-        .add_system(bevy::input::system::exit_on_esc_system)
+        .add_system(bevy::window::close_on_esc)
         .add_system(run)
         .run();
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<WindowDescriptor>) {
     // Spawn a Camera
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(Camera2dBundle::default());
 
     // Reference for the origin
     commands.spawn_bundle(SpriteBundle {
@@ -49,7 +49,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
 
     commands
         .spawn_bundle(Text2dBundle {
-            text: Text::with_section(value, style.clone(), alignment),
+            text: Text::from_section(value, style).with_alignment(alignment),
             transform,
             ..Default::default()
         })
@@ -60,7 +60,7 @@ fn run(mouse_pos: Res<MousePos>, mut hud_text: Query<&mut Text, With<Hud>>) {
     let hud_value = format!("Mouse: ({}, {})", mouse_pos.x, mouse_pos.y,);
 
     if let Some(mut hud_text) = hud_text.iter_mut().next() {
-        hud_text.sections.first_mut().unwrap().value = hud_value.clone();
+        hud_text.sections.first_mut().unwrap().value = hud_value;
     } else {
         println!("No Hud Found");
     }
