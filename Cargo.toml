@@ -18,4 +18,9 @@ features = [ "render" ]
 [dev-dependencies.bevy]
 version = "0.8.*"
 default-features = false
-features = [ "render", "png", "bevy_winit" ]
+features = [
+    "render",
+    "png",
+    "bevy_asset",
+    "bevy_winit"
+    ]

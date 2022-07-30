@@ -82,8 +82,8 @@
 //!     .run();
 //!
 //! fn setup(mut commands: Commands) {
-//!     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-//!     commands.spawn_bundle(UiCameraBundle::default());
+//!     commands.spawn_bundle(Camera2dBundle::default());
+//!     commands.spawn_bundle(Camera3dBundle::default());
 //! }
 //! ```
 //!
@@ -106,9 +106,9 @@
 //! #   .add_startup_system(setup)
 //! #   .update();
 //! # fn setup(mut commands: Commands) {
-//!     commands.spawn_bundle(OrthographicCameraBundle::new_2d())
+//!     commands.spawn_bundle(Camera2dBundle::default())
 //!         .insert(MainCamera); // added this line
-//!     commands.spawn_bundle(UiCameraBundle::default());
+//!     commands.spawn_bundle(Camera3dBundle::default());
 //! # }
 //! ```
 //!
@@ -177,8 +177,8 @@
 //! #   .update();
 //!
 //! # fn setup(mut commands: Commands) {
-//! #   commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-//! #   commands.spawn_bundle(UiCameraBundle::default());
+//! #   commands.spawn_bundle(Camera2dBundle::default());
+//! #   commands.spawn_bundle(Camera2dBundle::default());
 //! # }
 //! ```
 //!
