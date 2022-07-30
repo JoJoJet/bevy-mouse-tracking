@@ -77,8 +77,8 @@ App::new()
     .run();
 
 fn setup(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn_bundle(Camera3dBundle::default());
 }
 ```
 
@@ -93,9 +93,9 @@ This is because the plugin doesn't know which of the two cameras to use when fig
 the values of the `MousePos` and `MousePosWorld` resources. Let's take the panic message's advice.
 
 ```rust
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d())
+    commands.spawn_bundle(Camera2dBundle::default())
         .insert(MainCamera); // added this line
-    commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn_bundle(Camera3dBundle::default());
 ```
 
 ### Queries
