@@ -62,6 +62,11 @@ impl Plugin for MousePosPlugin {
     }
 }
 
+/// Marker component for cameras to be excluded from tracking.
+/// Any camera with this component will not be given a [`MousePos`] or [`MousePosWorld`] component.
+#[derive(Debug, Clone, Copy, Component)]
+pub struct ExcludeTracking;
+
 /// The location of the mouse in screenspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
 /// on this should come after `CoreStage::First`.
@@ -81,9 +86,12 @@ impl Display for MousePos {
     }
 }
 
+type NeedScreenspaceTracking = (Without<MousePos>, Without<ExcludeTracking>);
+type NeedWorldspaceTracking = (Without<MousePosWorld>, Without<ExcludeTracking>);
+
 fn add_pos_components(
-    cameras1: Query<(Entity, &Camera), Without<MousePos>>,
-    cameras2: Query<Entity, (With<Camera>, Without<MousePosWorld>)>,
+    cameras1: Query<(Entity, &Camera), NeedScreenspaceTracking>,
+    cameras2: Query<Entity, (With<Camera>, NeedWorldspaceTracking)>,
     windows: Res<Windows>,
     mut commands: Commands,
 ) {
@@ -140,12 +148,12 @@ impl Deref for MousePosWorld {
 
 fn update_pos_ortho(
     mut tracking: Query<(Entity, &mut MousePosWorld, &MousePos), Changed<MousePos>>,
-    cameras: Query<(&GlobalTransform, &OrthographicProjection)>,
+    cameras: Query<(&GlobalTransform, &OrthographicProjection), Without<ExcludeTracking>>,
 ) {
     for (camera, mut world, screen) in tracking.iter_mut() {
         let (camera, proj) = cameras
             .get(camera)
-            .expect("only orthographic cameras are supported");
+            .expect("only orthographic cameras are supported -- consider adding an ExcludeTracking component");
         let offset = Vec2::new(proj.left, proj.bottom);
 
         // Must multiply by projection scale before applying camera global transform
@@ -182,6 +190,7 @@ fn main_camera_changed(
 fn find_main_camera(
     mut main_store: ResMut<MainCameraStore>,
     cameras: Query<(Entity, Option<&MainCamera>), With<Camera>>,
+    excluded_main: Query<Entity, (With<MainCamera>, With<ExcludeTracking>)>,
 ) {
     use bevy::ecs::query::QuerySingleError;
     main_store.0 = match cameras.get_single() {
@@ -201,6 +210,10 @@ fn find_main_camera(
             }
             Some(main)
         }
+    };
+    // panic if the query finds an entity with both MainCamera and ExcludeTracking components
+    if !excluded_main.is_empty() {
+        panic!("excluded main camera -- consider removing the ExcludeTracking component from the main camera")
     }
 }
 
