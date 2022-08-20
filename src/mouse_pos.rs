@@ -65,7 +65,7 @@ impl Plugin for MousePosPlugin {
 /// Marker component for cameras to be excluded from tracking.
 /// Any camera with this component will not be given a [`MousePos`] or [`MousePosWorld`] component.
 #[derive(Debug, Clone, Copy, Component)]
-pub struct ExcludeTracking;
+pub struct ExcludeMouseTracking;
 
 /// The location of the mouse in screenspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
@@ -86,8 +86,8 @@ impl Display for MousePos {
     }
 }
 
-type NeedScreenspaceTracking = (Without<MousePos>, Without<ExcludeTracking>);
-type NeedWorldspaceTracking = (Without<MousePosWorld>, Without<ExcludeTracking>);
+type NeedScreenspaceTracking = (Without<MousePos>, Without<ExcludeMouseTracking>);
+type NeedWorldspaceTracking = (Without<MousePosWorld>, Without<ExcludeMouseTracking>);
 
 fn add_pos_components(
     cameras1: Query<(Entity, &Camera), NeedScreenspaceTracking>,
@@ -148,7 +148,7 @@ impl Deref for MousePosWorld {
 
 fn update_pos_ortho(
     mut tracking: Query<(Entity, &mut MousePosWorld, &MousePos), Changed<MousePos>>,
-    cameras: Query<(&GlobalTransform, &OrthographicProjection), Without<ExcludeTracking>>,
+    cameras: Query<(&GlobalTransform, &OrthographicProjection), Without<ExcludeMouseTracking>>,
 ) {
     for (camera, mut world, screen) in tracking.iter_mut() {
         let (camera, proj) = cameras
@@ -190,7 +190,7 @@ fn main_camera_changed(
 fn find_main_camera(
     mut main_store: ResMut<MainCameraStore>,
     cameras: Query<(Entity, Option<&MainCamera>), With<Camera>>,
-    excluded_main: Query<Entity, (With<MainCamera>, With<ExcludeTracking>)>,
+    excluded_main: Query<Entity, (With<MainCamera>, With<ExcludeMouseTracking>)>,
 ) {
     use bevy::ecs::query::QuerySingleError;
     main_store.0 = match cameras.get_single() {
