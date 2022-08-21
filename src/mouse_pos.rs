@@ -153,7 +153,7 @@ fn update_pos_ortho(
     for (camera, mut world, screen) in tracking.iter_mut() {
         let (camera, proj) = cameras
             .get(camera)
-            .expect("only orthographic cameras are supported -- consider adding an ExcludeTracking component");
+            .expect("only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component");
         let offset = Vec2::new(proj.left, proj.bottom);
 
         // Must multiply by projection scale before applying camera global transform
@@ -211,9 +211,9 @@ fn find_main_camera(
             Some(main)
         }
     };
-    // panic if the query finds an entity with both MainCamera and ExcludeTracking components
+    // panic if the query finds an entity with both MainCamera and ExcludeMouseTracking components
     if !excluded_main.is_empty() {
-        panic!("excluded main camera -- consider removing the ExcludeTracking component from the main camera")
+        panic!("excluded main camera -- consider removing the ExcludeMouseTracking component from the main camera")
     }
 }
 

@@ -185,7 +185,7 @@
 //! One reason to do this is because this crate does not currently support cameras with projections other than Bevy's `OrthographicProjection`. If you use such a camera, even if you don't use it for tracking mouse position, you will find that it panics:
 //!
 //! ```text
-//! thread 'main' panicked at 'only orthographic cameras are supported -- consider adding an ExcludeTracking component: QueryDoesNotMatch(5v0)', src\mouse_pos.rs:148:14
+//! thread 'main' panicked at 'only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component: QueryDoesNotMatch(5v0)', src\mouse_pos.rs:148:14
 //! ```
 //!
 //! To get around this, you may choose to have the camera opt-out.
@@ -202,7 +202,7 @@
 //! If you add the `ExcludeMouseTracking` component to an entity that also has the `MainCamera` component, you will find that the app panics:
 //!
 //! ```text
-//! thread 'main' panicked at 'excluded main camera -- consider removing the ExcludeTracking component from the main camera', src\mouse_pos.rs:216:9
+//! thread 'main' panicked at 'excluded main camera -- consider removing the ExcludeMouseTracking component from the main camera', src\mouse_pos.rs:216:9
 //! ```
 //!
 //! You should remove either `ExcludeMouseTracking` or `MainCamera`, as they should not be used together.
