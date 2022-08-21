@@ -62,8 +62,11 @@ impl Plugin for MousePosPlugin {
     }
 }
 
-/// Marker component for cameras to be excluded from tracking.
-/// Any camera with this component will not be given a [`MousePos`] or [`MousePosWorld`] component.
+/// Marker component for cameras that should be excluded from mouse tracking.
+/// Any entity with this component will be ignored by [`MousePosPlugin`].
+///
+/// If you add the [`ExcludeMouseTracking`] component to an entity that also has the [`MainCamera`] component, the app will panic.
+/// You should remove either [`ExcludeMouseTracking`] or [`MainCamera`], as they should not be used together.
 #[derive(Debug, Clone, Copy, Component)]
 pub struct ExcludeMouseTracking;
 
@@ -75,6 +78,7 @@ pub struct MousePos(Vec2);
 
 impl Deref for MousePos {
     type Target = Vec2;
+
     fn deref(&self) -> &Vec2 {
         &self.0
     }
@@ -141,6 +145,7 @@ impl Display for MousePosWorld {
 
 impl Deref for MousePosWorld {
     type Target = Vec3;
+
     fn deref(&self) -> &Vec3 {
         &self.0
     }
@@ -151,9 +156,7 @@ fn update_pos_ortho(
     cameras: Query<(&GlobalTransform, &OrthographicProjection), Without<ExcludeMouseTracking>>,
 ) {
     for (camera, mut world, screen) in tracking.iter_mut() {
-        let (camera, proj) = cameras
-            .get(camera)
-            .expect("only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component");
+        let (camera, proj) = cameras.get(camera).expect("only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component");
         let offset = Vec2::new(proj.left, proj.bottom);
 
         // Must multiply by projection scale before applying camera global transform
@@ -173,8 +176,7 @@ pub struct MainCamera;
 struct MainCameraStore(Option<Entity>);
 
 // only run when the candidates for the main camera change.
-use bevy::ecs::schedule::ShouldRun;
-use bevy::render::camera::RenderTarget;
+use bevy::{ecs::schedule::ShouldRun, render::camera::RenderTarget};
 
 fn main_camera_changed(
     cam: Query<Entity, Added<Camera>>,
@@ -202,9 +204,7 @@ fn find_main_camera(
         Err(QuerySingleError::MultipleEntities(_)) => {
             // try to disambiguate
             let mut mains = cameras.iter().filter_map(|(e, main)| main.and(Some(e)));
-            let main = mains.next().unwrap_or_else(|| {
-                panic!("cannot identify main camera -- consider adding the MainCamera component to one of the cameras")
-            });
+            let main = mains.next().unwrap_or_else(|| panic!("cannot identify main camera -- consider adding the MainCamera component to one of the cameras"));
             if mains.next().is_some() {
                 panic!("only one camera may be marked with the MainCamera component");
             }
