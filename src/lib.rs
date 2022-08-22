@@ -90,12 +90,11 @@
 //! This panics with the following output:
 //!
 //! ```text
-//! thread 'main' panicked at 'cannot identify main camera -- consider adding the MainCamera component to one of the cameras', src\mouse_pos.rs:163:13
-//! note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+//! thread 'main' panicked at 'cannot identify main camera -- consider adding the MainCamera component to one of the cameras', src\mouse_pos.rs:207:55
 //! ```
 //!
 //! This is because the plugin doesn't know which of the two cameras to use when figuring out
-//! the values of the `MousePos` and `MousePosWorld` resources. Let's take the panic message's advice.
+//! the values of the [`MousePos`] and [`MousePosWorld`] resources. Let's take the panic message's advice.
 //!
 //! ```
 //! # use bevy::prelude::*;
@@ -115,7 +114,7 @@
 //! ## Queries
 //!
 //! If you want to get mouse tracking information relative to each camera individually,
-//! simply [query](bevy::ecs::system::Query) for a `MousePos` or `MousePosWorld` as a
+//! simply [query](bevy::ecs::system::Query) for a [`MousePos`] or [`MousePosWorld`] as a
 //! _component_ instead of as a resource.
 //!
 //! ```
@@ -161,8 +160,53 @@
 //!
 //! Now, you can add as many cameras as you want, without having to worry about marking any
 //! of them as the main camera.  
-//! Note that `MousePos` and `MousePosWorld` will no longer be accessible as global resources
-//! -- you can only access them by `Query`ing camera entities.
+//! Note that [`MousePos`] and [`MousePosWorld`] will no longer be accessible as global resources
+//! -- you can only access them by [`Query`](bevy::ecs::system::Query)ing camera entities.
+//!
+//! ## Opt-out of tracking for cameras
+//!
+//! If you wish to have a camera be excluded from mouse tracking for whatever reason, you may give it the [`ExcludeMouseTracking`] component.
+//!
+//! ```
+//! # use bevy::prelude::*;
+//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, ExcludeMouseTracking};
+//! # App::new()
+//! #   .add_plugins(DefaultPlugins)
+//! #   .add_plugin(MousePosPlugin::SingleCamera)
+//! #   .add_startup_system(setup)
+//! #   .update();
+//! # fn setup(mut commands: Commands) {
+//!     commands.spawn_bundle(Camera2dBundle::default())
+//!         .insert(ExcludeMouseTracking);
+//! # }
+//! ```
+//!
+//! This camera will not have a [`MousePos`] or a [`MousePosWorld`], as it is completely excluded from mouse tracking.
+//!
+//! One reason to do this is because this crate does not currently support cameras with projections other than Bevy's [`OrthographicProjection`](bevy::render::camera::OrthographicProjection). If you use such a camera, even if you don't use it for tracking mouse position, you will find that it panics:
+//!
+//! ```text
+//! thread 'main' panicked at 'only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component: QueryDoesNotMatch(5v0)', src\mouse_pos.rs:159:50
+//! ```
+//!
+//! To get around this, you may choose to have the camera opt-out.
+//!
+//! ```
+//! # use bevy::prelude::*;
+//! # use bevy::render::camera::{PerspectiveProjection, Projection};
+//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, ExcludeMouseTracking};
+//! # App::new()
+//! #   .add_plugins(DefaultPlugins)
+//! #   .add_plugin(MousePosPlugin::SingleCamera)
+//! #   .add_startup_system(setup)
+//! #   .update();
+//! # fn setup(mut commands: Commands) {
+//!     commands.spawn_bundle(Camera3dBundle {
+//!         projection: Projection::from(PerspectiveProjection::default()),
+//!         ..default()
+//!     }).insert(ExcludeMouseTracking);
+//! # }
+//! ```
 //!
 //! # Mouse motion
 //!
@@ -184,7 +228,7 @@
 //! ```
 
 mod mouse_pos;
-pub use mouse_pos::{MainCamera, MousePos, MousePosPlugin, MousePosWorld};
+pub use mouse_pos::{ExcludeMouseTracking, MainCamera, MousePos, MousePosPlugin, MousePosWorld};
 
 mod mouse_motion;
 pub use mouse_motion::{MouseMotion, MouseMotionPlugin};

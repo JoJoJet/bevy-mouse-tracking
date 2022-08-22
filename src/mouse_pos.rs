@@ -62,6 +62,14 @@ impl Plugin for MousePosPlugin {
     }
 }
 
+/// Marker component for cameras that should be excluded from mouse tracking.
+/// Any entity with this component will be ignored by [`MousePosPlugin`].
+///
+/// If you add the [`ExcludeMouseTracking`] component to an entity that also has the [`MainCamera`] component, the app will panic.
+/// You should remove either [`ExcludeMouseTracking`] or [`MainCamera`], as they should not be used together.
+#[derive(Debug, Clone, Copy, Component)]
+pub struct ExcludeMouseTracking;
+
 /// The location of the mouse in screenspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
 /// on this should come after `CoreStage::First`.
@@ -70,6 +78,7 @@ pub struct MousePos(Vec2);
 
 impl Deref for MousePos {
     type Target = Vec2;
+
     fn deref(&self) -> &Vec2 {
         &self.0
     }
@@ -81,9 +90,12 @@ impl Display for MousePos {
     }
 }
 
+type NeedsScreenspaceTracking = (Without<MousePos>, Without<ExcludeMouseTracking>);
+type NeedsWorldspaceTracking = (Without<MousePosWorld>, Without<ExcludeMouseTracking>);
+
 fn add_pos_components(
-    cameras1: Query<(Entity, &Camera), Without<MousePos>>,
-    cameras2: Query<Entity, (With<Camera>, Without<MousePosWorld>)>,
+    cameras1: Query<(Entity, &Camera), NeedsScreenspaceTracking>,
+    cameras2: Query<Entity, (With<Camera>, NeedsWorldspaceTracking)>,
     windows: Res<Windows>,
     mut commands: Commands,
 ) {
@@ -133,6 +145,7 @@ impl Display for MousePosWorld {
 
 impl Deref for MousePosWorld {
     type Target = Vec3;
+
     fn deref(&self) -> &Vec3 {
         &self.0
     }
@@ -140,12 +153,10 @@ impl Deref for MousePosWorld {
 
 fn update_pos_ortho(
     mut tracking: Query<(Entity, &mut MousePosWorld, &MousePos), Changed<MousePos>>,
-    cameras: Query<(&GlobalTransform, &OrthographicProjection)>,
+    cameras: Query<(&GlobalTransform, &OrthographicProjection), Without<ExcludeMouseTracking>>,
 ) {
     for (camera, mut world, screen) in tracking.iter_mut() {
-        let (camera, proj) = cameras
-            .get(camera)
-            .expect("only orthographic cameras are supported");
+        let (camera, proj) = cameras.get(camera).expect("only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component");
         let offset = Vec2::new(proj.left, proj.bottom);
 
         // Must multiply by projection scale before applying camera global transform
@@ -156,6 +167,9 @@ fn update_pos_ortho(
 
 /// Marker component for the primary camera in the world.
 /// If only one camera exists, this is optional.
+///
+/// # Notes
+/// If there are multiple `MainCamera`s in the same world, the app will panic.
 #[derive(Debug, Clone, Copy, Component)]
 pub struct MainCamera;
 
@@ -165,8 +179,7 @@ pub struct MainCamera;
 struct MainCameraStore(Option<Entity>);
 
 // only run when the candidates for the main camera change.
-use bevy::ecs::schedule::ShouldRun;
-use bevy::render::camera::RenderTarget;
+use bevy::{ecs::schedule::ShouldRun, render::camera::RenderTarget};
 
 fn main_camera_changed(
     cam: Query<Entity, Added<Camera>>,
@@ -182,6 +195,7 @@ fn main_camera_changed(
 fn find_main_camera(
     mut main_store: ResMut<MainCameraStore>,
     cameras: Query<(Entity, Option<&MainCamera>), With<Camera>>,
+    excluded_main: Query<Entity, (With<MainCamera>, With<ExcludeMouseTracking>)>,
 ) {
     use bevy::ecs::query::QuerySingleError;
     main_store.0 = match cameras.get_single() {
@@ -193,14 +207,16 @@ fn find_main_camera(
         Err(QuerySingleError::MultipleEntities(_)) => {
             // try to disambiguate
             let mut mains = cameras.iter().filter_map(|(e, main)| main.and(Some(e)));
-            let main = mains.next().unwrap_or_else(|| {
-                panic!("cannot identify main camera -- consider adding the MainCamera component to one of the cameras")
-            });
+            let main = mains.next().unwrap_or_else(|| panic!("cannot identify main camera -- consider adding the MainCamera component to one of the cameras"));
             if mains.next().is_some() {
                 panic!("only one camera may be marked with the MainCamera component");
             }
             Some(main)
         }
+    };
+    // panic if the query finds an entity with both MainCamera and ExcludeMouseTracking components
+    if !excluded_main.is_empty() {
+        panic!("excluded main camera -- consider removing the ExcludeMouseTracking component from the main camera")
     }
 }
 
