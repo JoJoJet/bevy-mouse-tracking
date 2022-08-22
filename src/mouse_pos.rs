@@ -90,12 +90,12 @@ impl Display for MousePos {
     }
 }
 
-type NeedScreenspaceTracking = (Without<MousePos>, Without<ExcludeMouseTracking>);
-type NeedWorldspaceTracking = (Without<MousePosWorld>, Without<ExcludeMouseTracking>);
+type NeedsScreenspaceTracking = (Without<MousePos>, Without<ExcludeMouseTracking>);
+type NeedsWorldspaceTracking = (Without<MousePosWorld>, Without<ExcludeMouseTracking>);
 
 fn add_pos_components(
-    cameras1: Query<(Entity, &Camera), NeedScreenspaceTracking>,
-    cameras2: Query<Entity, (With<Camera>, NeedWorldspaceTracking)>,
+    cameras1: Query<(Entity, &Camera), NeedsScreenspaceTracking>,
+    cameras2: Query<Entity, (With<Camera>, NeedsWorldspaceTracking)>,
     windows: Res<Windows>,
     mut commands: Commands,
 ) {
@@ -167,6 +167,9 @@ fn update_pos_ortho(
 
 /// Marker component for the primary camera in the world.
 /// If only one camera exists, this is optional.
+///
+/// # Notes
+/// If there are multiple `MainCamera`s in the same world, the app will panic.
 #[derive(Debug, Clone, Copy, Component)]
 pub struct MainCamera;
 

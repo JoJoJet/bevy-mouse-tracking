@@ -111,14 +111,6 @@
 //! # }
 //! ```
 //!
-//! If you have multiple cameras with [`MainCamera`], the app panics:
-//!
-//! ```text
-//! thread 'main' panicked at 'only one camera may be marked with the MainCamera component', src\mouse_pos.rs:209:17
-//! ```
-//!
-//! You should only have a single [`MainCamera`] in your app.
-//!
 //! ## Queries
 //!
 //! If you want to get mouse tracking information relative to each camera individually,
