@@ -175,14 +175,23 @@
 //!
 //! If you wish to have a camera be excluded from mouse tracking for whatever reason, you may give it the [`ExcludeMouseTracking`] component.
 //!
-//! ```rust
-//! commands.spawn_bundle(Camera2dBundle::default())
-//!     .insert(ExcludeMouseTracking);
+//! ```
+//! # use bevy::prelude::*;
+//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, ExcludeMouseTracking};
+//! # App::new()
+//! #   .add_plugins(DefaultPlugins)
+//! #   .add_plugin(MousePosPlugin::SingleCamera)
+//! #   .add_startup_system(setup)
+//! #   .update();
+//! # fn setup(mut commands: Commands) {
+//!     commands.spawn_bundle(Camera2dBundle::default())
+//!         .insert(ExcludeMouseTracking);
+//! # }
 //! ```
 //!
 //! This camera will not have a [`MousePos`] or a [`MousePosWorld`], as it is completely excluded from mouse tracking.
 //!
-//! One reason to do this is because this crate does not currently support cameras with projections other than Bevy's [`OrthographicProjection`](bevy::render::camera::projection::OrthographicProjection). If you use such a camera, even if you don't use it for tracking mouse position, you will find that it panics:
+//! One reason to do this is because this crate does not currently support cameras with projections other than Bevy's [`OrthographicProjection`](bevy::render::camera::OrthographicProjection). If you use such a camera, even if you don't use it for tracking mouse position, you will find that it panics:
 //!
 //! ```text
 //! thread 'main' panicked at 'only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component: QueryDoesNotMatch(5v0)', src\mouse_pos.rs:159:50
@@ -190,13 +199,21 @@
 //!
 //! To get around this, you may choose to have the camera opt-out.
 //!
-//! ```rust
-//! commands
-//!     .spawn_bundle(Camera2dBundle {
-//!         projection: MyCustomProjection,
+//! ```
+//! # use bevy::prelude::*;
+//! # use bevy::render::camera::{PerspectiveProjection, Projection};
+//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, ExcludeMouseTracking};
+//! # App::new()
+//! #   .add_plugins(DefaultPlugins)
+//! #   .add_plugin(MousePosPlugin::SingleCamera)
+//! #   .add_startup_system(setup)
+//! #   .update();
+//! # fn setup(mut commands: Commands) {
+//!     commands.spawn_bundle(Camera3dBundle {
+//!         projection: Projection::from(PerspectiveProjection::default()),
 //!         ..default()
-//!     })
-//!     .insert(ExcludeMouseTracking);
+//!     }).insert(ExcludeMouseTracking);
+//! # }
 //! ```
 //!
 //! # Mouse motion
