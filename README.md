@@ -29,8 +29,9 @@ use bevy_mouse_tracking_plugin::{MousePosPlugin, MainCamera};
 App::new()
     .add_plugins(DefaultPlugins)
     .add_plugin(MousePosPlugin)
+    .add_startup_system(setup)
+    .add_system(dbg_mouse)
     // ...
-    .update();
 
 // Spawn a camera, and specify it as the main camera.
 
