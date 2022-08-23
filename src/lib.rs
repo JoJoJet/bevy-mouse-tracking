@@ -103,7 +103,7 @@
 //! use bevy_mouse_tracking_plugin::MousePosWorld;
 //!
 //! fn setup(mut commands: Commands) {
-//! #    let camera_id = commands
+//!     let camera_id = commands
 //! #        .spawn_bundle(Camera2dBundle::default())
 //!         // ...
 //!         // Opt in to mouse tracking.

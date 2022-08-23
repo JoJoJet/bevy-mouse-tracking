@@ -87,6 +87,7 @@ transformation to world-space coordinates via [`MousePosWorld`]
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
 fn setup(mut commands: Commands) {
+    let camera_id = commands
         // ...
         // Opt in to mouse tracking.
         // Adding `MousePosWorld` will automatically add `MousePos`.
