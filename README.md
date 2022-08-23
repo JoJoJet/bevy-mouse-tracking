@@ -75,10 +75,19 @@ _component_ instead of as a resource.
 
 App::new()
     // plugins omitted...
+    .add_startup_system(setup)
     .add_system(dbg_for_each)
 
+fn setup(mut commands: Commands) {
+    // Spawn the main camera for the game...
+    commands.spawn_bundle(Camera2dBundle::default());
+    // ...as well as a special overhead camera for the minimap.
+    commands.spawn_bundle(MinimapCameraBundle::default());
+}
+
 fn dbg_for_each(mouse_pos: Query<&MousePosWorld>) {
-    // This prints the mouse position for every camera, once per frame.
+    // This prints the mouse position twice every frame:
+    // once relative to the main camera, and once relative to the minimap camera.
     for pos in mouse_pos.iter() {
         eprintln!("{}", *pos);
     }
