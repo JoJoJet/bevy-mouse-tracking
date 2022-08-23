@@ -60,11 +60,9 @@ use bevy_mouse_tracking_plugin::MainCamera;
 
 fn setup(mut commands: Commands) {
     let camera_id = commands
-        // Spawn a camera bundle
-        .spawn_bundle(Camera2dBundle::default())
-        // Opt in to mouse tracking
-        .insert(MousePos::default())
-        // Get the ID of the camera entity we just spawned
+        // Spawn a camera bundle, etc.
+        // ...
+        // Get the ID of the camera entity we just spawned.
         .id();
 
     // Define the `MainCamera` resource.
@@ -86,29 +84,25 @@ transformation to world-space coordinates via [`MousePosWorld`]
 -- this is can be accessed as either a component or a resource.
 
 ```rust
-use bevy_mouse_tracking_plugin::MainCamera;
+use bevy_mouse_tracking_plugin::MousePosWorld;
 
 fn setup(mut commands: Commands) {
-    let camera_id = commands
-        // Spawn a camera bundle
-        .spawn_bundle(Camera2dBundle::default())
-        // Opt in to mouse tracking
+        // Spawn camera bundle, etc.
+        // ...
+        // Opt in to mouse tracking.
         .insert(MousePos::default())
         .insert(MousePosWorld::default())
-        // Get the ID of the camera entity we just spawned
-        .id();
-
-    // Define the `MainCamera` resource.
-    commands.insert_resource(MainCamera(camera_id));
+        // Get the ID, define main camera resource, etc.
+        // ...
 }
 
-// Now that we've specified the main camera, we can get the mouse position using a global resource.
-
+// Getting the world-space position using a query.
 fn dbg_world_single(mouse: Query<&MousePosWorld>) {
-    // This will print the world-space location of the mouse on every frame.
+    // This will print the world-space position of the mouse on every frame.
     eprintln!("{}", *mouse.single());
 }
 
+// Getting it using the resource.
 fn dbg_world_res(mouse: Res<MousePosWorld>) {
     eprintln!("{}", *mouse);
 }
