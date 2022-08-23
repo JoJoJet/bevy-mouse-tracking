@@ -82,7 +82,7 @@
 //!     .add_system(dbg_for_each)
 //! #    .update();
 //!
-//! # type MinimapCameraBundle = Camera2dBundle::default();
+//! # type MinimapCameraBundle = Camera2dBundle;
 //! fn setup(mut commands: Commands) {
 //!     // Spawn the main camera for the game...
 //!     commands.spawn_bundle(Camera2dBundle::default());
