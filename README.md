@@ -78,6 +78,7 @@ App::new()
     // plugins omitted...
     .add_startup_system(setup)
     .add_system(dbg_for_each)
+    // ...
 
 fn setup(mut commands: Commands) {
     // Spawn the main camera for the game...
@@ -128,18 +129,16 @@ The motion can be accessed from any system in a [`MouseMotion`] resource.
 
 [`Res`]: bevy::ecs::system::Res
 
+<!-- cargo-rdme end -->
+
 ## Crate name
 
-As a final aside: the name of this crate is intentionally verbose.
-This is because I didn't want to steal a crate name, especially since
-it is very likely that this crate will eventually be made redundant by
-future updates to `bevy`.  
+As a final aside: the name of this crate is intentionally verbose,
+since it is very likely that this crate will eventually be made redundant by future updates to Bevy.  
 I recommend renaming the crate in your `Cargo.toml`:
 ```toml
 [dependencies]
 mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }
 ```
-
-<!-- cargo-rdme end -->
 
 License: MIT

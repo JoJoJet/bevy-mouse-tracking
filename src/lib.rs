@@ -152,18 +152,6 @@
 //! The motion can be accessed from any system in a [`MouseMotion`] resource.
 //!
 //! [`Res`]: bevy::ecs::system::Res
-//!
-//! # Crate name
-//!
-//! As a final aside: the name of this crate is intentionally verbose.
-//! This is because I didn't want to steal a crate name, especially since
-//! it is very likely that this crate will eventually be made redundant by
-//! future updates to `bevy`.  
-//! I recommend renaming the crate in your `Cargo.toml`:
-//! ```toml
-//! [dependencies]
-//! mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }
-//! ```
 
 mod mouse_pos;
 pub use mouse_pos::{ExcludeMouseTracking, MainCamera, MousePos, MousePosPlugin, MousePosWorld};
