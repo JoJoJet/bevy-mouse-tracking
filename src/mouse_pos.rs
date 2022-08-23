@@ -1,15 +1,9 @@
 use std::{fmt::Display, ops::Deref};
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::RenderTarget};
 
 /// Plugin that tracks the mouse location.
-pub enum MousePosPlugin {
-    /// Configuration for apps that have a single main camera.
-    /// Provides global Resources for [`MousePos`] and [`MousePosWorld`].
-    SingleCamera,
-    /// Configuration for apps that have multiple cameras which must be handled separately.
-    MultiCamera,
-}
+pub struct MousePosPlugin;
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
@@ -23,29 +17,9 @@ impl Plugin for MousePosPlugin {
         app.add_system_to_stage(CoreStage::First, update_pos);
         app.add_system_to_stage(CoreStage::First, update_pos_ortho.after(update_pos));
 
-        match self {
-            Self::SingleCamera => {
-                app.insert_resource(MousePos(Default::default()));
-                app.insert_resource(MousePosWorld(Default::default()));
-                app.init_resource::<MainCameraStore>();
-
-                // system to update the current main camera
-                app.add_system_set_to_stage(
-                    CoreStage::First,
-                    SystemSet::new()
-                        .with_run_criteria(main_camera_changed)
-                        .with_system(find_main_camera),
-                );
-                //
-                app.add_system_to_stage(
-                    CoreStage::First,
-                    update_resources
-                        .after(update_pos_ortho)
-                        .after(find_main_camera),
-                );
-            }
-            Self::MultiCamera => {}
-        }
+        app.init_resource::<MousePos>();
+        app.init_resource::<MousePosWorld>();
+        app.add_system_to_stage(CoreStage::First, update_resources.after(update_pos_ortho));
     }
 }
 
@@ -60,7 +34,7 @@ pub struct ExcludeMouseTracking;
 /// The location of the mouse in screenspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
 /// on this should come after `CoreStage::First`.
-#[derive(Debug, Clone, Copy, PartialEq, Component)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Component)]
 pub struct MousePos(Vec2);
 
 impl Deref for MousePos {
@@ -121,7 +95,7 @@ fn update_pos(
 /// The location of the mouse in worldspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
 /// on this should come after `CoreStage::First`.
-#[derive(Debug, Clone, Copy, PartialEq, Component)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Component)]
 pub struct MousePosWorld(Vec3);
 
 impl Display for MousePosWorld {
@@ -152,77 +126,34 @@ fn update_pos_ortho(
     }
 }
 
-/// Marker component for the primary camera in the world.
-/// If only one camera exists, this is optional.
-///
-/// # Notes
-/// If there are multiple `MainCamera`s in the same world, the app will panic.
-#[derive(Debug, Clone, Copy, Component)]
-pub struct MainCamera;
-
-/// Resource that caches the main camera, so it doesn't need to be looked up every frame.
-/// This is an implementation detail and thus should not be part of the public api.
-#[derive(Debug, Default)]
-struct MainCameraStore(Option<Entity>);
-
-// only run when the candidates for the main camera change.
-use bevy::{ecs::schedule::ShouldRun, render::camera::RenderTarget};
-
-fn main_camera_changed(
-    cam: Query<Entity, Added<Camera>>,
-    main: Query<Entity, Added<MainCamera>>,
-) -> ShouldRun {
-    if !cam.is_empty() || !main.is_empty() {
-        ShouldRun::Yes
-    } else {
-        ShouldRun::No
-    }
-}
-
-fn find_main_camera(
-    mut main_store: ResMut<MainCameraStore>,
-    cameras: Query<(Entity, Option<&MainCamera>), With<Camera>>,
-    excluded_main: Query<Entity, (With<MainCamera>, With<ExcludeMouseTracking>)>,
-) {
-    use bevy::ecs::query::QuerySingleError;
-    main_store.0 = match cameras.get_single() {
-        Ok((e, ..)) => Some(e),
-        Err(QuerySingleError::NoEntities(_)) => {
-            // no main camera exists
-            None
-        }
-        Err(QuerySingleError::MultipleEntities(_)) => {
-            // try to disambiguate
-            let mut mains = cameras.iter().filter_map(|(e, main)| main.and(Some(e)));
-            let main = mains.next().unwrap_or_else(|| panic!("cannot identify main camera -- consider adding the MainCamera component to one of the cameras"));
-            if mains.next().is_some() {
-                panic!("only one camera may be marked with the MainCamera component");
-            }
-            Some(main)
-        }
-    };
-    // panic if the query finds an entity with both MainCamera and ExcludeMouseTracking components
-    if !excluded_main.is_empty() {
-        panic!("excluded main camera -- consider removing the ExcludeMouseTracking component from the main camera")
-    }
-}
+/// Resource that specifies the main camera. If this resource is not defined, all cameras will be treated equally.
+pub struct MainCamera(pub Entity);
 
 fn update_resources(
     mut screen_res: ResMut<MousePos>,
     mut world_res: ResMut<MousePosWorld>,
-    main: Res<MainCameraStore>,
+    main: Option<Res<MainCamera>>,
     screen: Query<&MousePos, Changed<MousePos>>,
     world: Query<&MousePosWorld, Changed<MousePosWorld>>,
+    mut main_defined_last_frame: Local<bool>,
 ) {
-    let main = match main.0 {
-        Some(m) => m,
-        None => return, // no main camera, try again next frame
+    let main = if let Some(main) = main {
+        *main_defined_last_frame = true;
+        main.0
+    } else {
+        // If the main camera was unset since last frame, zero out the resources.
+        if *main_defined_last_frame {
+            *screen_res = MousePos::default();
+            *world_res = MousePosWorld::default();
+            *main_defined_last_frame = false;
+        }
+        return;
     };
-    // update the global resources if the components for the main camera changed.
-    if let Ok(screen) = screen.get(main) {
-        screen_res.0 = screen.0;
+
+    if let Ok(&screen) = screen.get(main) {
+        *screen_res = screen;
     }
-    if let Ok(world) = world.get(main) {
-        world_res.0 = world.0;
+    if let Ok(&world) = world.get(main) {
+        *world_res = world;
     }
 }
