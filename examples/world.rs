@@ -26,7 +26,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
     camera_bundle.projection.scale = 0.5; // works fine with non-unit scaling.
     let camera_id = commands
         .spawn_bundle(camera_bundle)
-        .insert(MousePos::default())
         .insert(MousePosWorld::default())
         .id();
     commands.insert_resource(MainCamera(camera_id));

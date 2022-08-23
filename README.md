@@ -60,8 +60,8 @@ use bevy_mouse_tracking_plugin::MainCamera;
 
 fn setup(mut commands: Commands) {
     let camera_id = commands
-        // Spawn a camera bundle, etc.
-        // ...
+        // ...spawn a camera bundle, etc.
+        //
         // Get the ID of the camera entity we just spawned.
         .id();
 
@@ -87,10 +87,9 @@ transformation to world-space coordinates via [`MousePosWorld`]
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
 fn setup(mut commands: Commands) {
-        // Spawn camera bundle, etc.
         // ...
         // Opt in to mouse tracking.
-        .insert(MousePos::default())
+        // Adding `MousePosWorld` will automatically add `MousePos`.
         .insert(MousePosWorld::default())
         // Get the ID, define main camera resource, etc.
         // ...

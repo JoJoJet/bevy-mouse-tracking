@@ -65,10 +65,10 @@
 //!
 //! fn setup(mut commands: Commands) {
 //!     let camera_id = commands
-//!         // Spawn a camera bundle, etc.
+//!         // ...spawn a camera bundle, etc.
 //! #        .spawn_bundle(Camera2dBundle::default())
 //! #        .insert(MousePos::default())
-//!         // ...
+//!         //
 //!         // Get the ID of the camera entity we just spawned.
 //!         .id();
 //!
@@ -105,10 +105,9 @@
 //! fn setup(mut commands: Commands) {
 //! #    let camera_id = commands
 //! #        .spawn_bundle(Camera2dBundle::default())
-//!         // Spawn camera bundle, etc.
 //!         // ...
 //!         // Opt in to mouse tracking.
-//!         .insert(MousePos::default())
+//!         // Adding `MousePosWorld` will automatically add `MousePos`.
 //!         .insert(MousePosWorld::default())
 //!         // Get the ID, define main camera resource, etc.
 //!         // ...
