@@ -20,37 +20,36 @@ This crate also supports more complex use cases such as multiple cameras, which 
 
 ## Basics
 
-First, add the plugin to your app:
-
 ```rust
 use bevy::prelude::*;
-use bevy_mouse_tracking_plugin::MousePosPlugin;
+use bevy_mouse_tracking_plugin::{MousePosPlugin, MainCamera};
+
+// First, add the plugin to your `App`.
 
 App::new()
     .add_plugins(DefaultPlugins)
-    .add_plugin(MousePosPlugin::SingleCamera);
-```
+    .add_plugin(MousePosPlugin)
+    .add_startup_system(setup)
+    .add_system(dbg_mouse)
+    // ...
 
-Now, you can access the resource in your [`System`]s:
+// Spawn a camera, and specify it as the main camera.
 
-[`System`]: bevy::ecs::system::System
+fn setup(mut commands: Commands) {
+    let camera_id = commands.spawn_bundle(Camera2dBundle::default()).id();
+    commands.insert_resource(MainCamera(camera_id));
+}
 
-```rust
+// With that, you can now easily track the main camera through a global resource.
+
 use bevy_mouse_tracking_plugin::MousePos;
 fn dbg_mouse(mouse: Res<MousePos>) {
+    // This will print the screen-space location of the mouse on every frame.
     eprintln!("{}", *mouse);
 }
 ```
-...and don't forget to add the system to your app:
-```rust
-    .add_plugin(MousePosPlugin::SingleCamera)
-    .add_system(dbg_mouse);
 
-```
-
-This will print the screen-space location of the mouse on every frame.
-
-However, we can do better than just screen-space: we support automatic
+We can do better than just screen-space: we support automatic
 transformation to world-space coordinates via the [`MousePosWorld`] resource.
 
 ```rust
@@ -61,82 +60,41 @@ fn dbg_world(mouse: Res<MousePosWorld>) {
 ```
 
 This will print the world-space location of the mouse on every frame.  
-Note that this is only supported for two-dimensional, orthographic camera,
+Note that this is only supported for two-dimensional, orthographic cameras,
 but pull requests for 3D support are welcome!
 
-## Multiple cameras
-
-You may notice that if you try to use this plugin in an app that has multiple cameras, it crashes!
-
-```rust
-
-App::new()
-    .add_plugins(DefaultPlugins)
-    .add_plugin(MousePosPlugin::SingleCamera)
-    .add_startup_system(setup)
-    .run();
-
-fn setup(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle::default());
-    commands.spawn_bundle(Camera3dBundle::default());
-}
-```
-
-This panics with the following output:
-
-```text
-thread 'main' panicked at 'cannot identify main camera -- consider adding the MainCamera component to one of the cameras', src\mouse_pos.rs:207:55
-```
-
-This is because the plugin doesn't know which of the two cameras to use when figuring out
-the values of the [`MousePos`] and [`MousePosWorld`] resources. Let's take the panic message's advice.
-
-```rust
-    commands.spawn_bundle(Camera2dBundle::default())
-        .insert(MainCamera); // added this line
-    commands.spawn_bundle(Camera3dBundle::default());
-```
+If you do not specify a [`MainCamera`] resource, the [`MousePos`] and [`MousePosWorld`]
+resources will still exist, but they will always be zero.
 
 ### Queries
 
 If you want to get mouse tracking information relative to each camera individually,
-simply [query](bevy::ecs::system::Query) for a [`MousePos`] or [`MousePosWorld`] as a
+simply [query](bevy::ecs::system::Query) for `MousePos` or `MousePosWorld` as a
 _component_ instead of as a resource.
 
 ```rust
 
 App::new()
     // plugins omitted...
-    .add_system(dbg_for_each);
+    .add_startup_system(setup)
+    .add_system(dbg_for_each)
+    // ...
+
+fn setup(mut commands: Commands) {
+    // Spawn the main camera for the game...
+    commands.spawn_bundle(Camera2dBundle::default());
+    // ...as well as a special overhead camera for the minimap.
+    commands.spawn_bundle(MinimapCameraBundle::default());
+}
 
 fn dbg_for_each(mouse_pos: Query<&MousePosWorld>) {
+    // This prints the mouse position twice every frame:
+    // once relative to the main camera, and once relative to the minimap camera.
     for pos in mouse_pos.iter() {
-        // This prints the mouse position twice per frame:
-        // once relative to the UI camera, and once relative to the physical camera.
         eprintln!("{}", *pos);
     }
 }
 ```
-
-### No main camera
-
-Let's say you have multiple cameras in your app, and you want to treat them all equally,
-without declaring any one of them as the main camera.  
-Change the plugin to this:
-
-```rust
-App::new()
-    .add_plugins(DefaultPlugins)
-    .add_plugin(MousePosPlugin::MultiCamera) // SingleCamera -> MultiCamera
-    .add_startup_system(setup)
-    // ...
-
-```
-
-Now, you can add as many cameras as you want, without having to worry about marking any
-of them as the main camera.  
-Note that [`MousePos`] and [`MousePosWorld`] will no longer be accessible as global resources
--- you can only access them by [`Query`](bevy::ecs::system::Query)ing camera entities.
 
 ### Opt-out of tracking for cameras
 
@@ -171,18 +129,16 @@ The motion can be accessed from any system in a [`MouseMotion`] resource.
 
 [`Res`]: bevy::ecs::system::Res
 
+<!-- cargo-rdme end -->
+
 ## Crate name
 
-As a final aside: the name of this crate is intentionally verbose.
-This is because I didn't want to steal a crate name, especially since
-it is very likely that this crate will eventually be made redundant by
-future updates to `bevy`.  
+As a final aside: the name of this crate is intentionally verbose,
+since it is very likely that this crate will eventually be made redundant by future updates to Bevy.  
 I recommend renaming the crate in your `Cargo.toml`:
 ```toml
 [dependencies]
 mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }
 ```
-
-<!-- cargo-rdme end -->
 
 License: MIT
