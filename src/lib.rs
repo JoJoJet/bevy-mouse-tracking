@@ -80,6 +80,7 @@
 //! #   .add_plugin(MousePosPlugin)
 //!     .add_startup_system(setup)
 //!     .add_system(dbg_for_each)
+//!     // ...
 //! #    .update();
 //!
 //! # type MinimapCameraBundle = Camera2dBundle;
