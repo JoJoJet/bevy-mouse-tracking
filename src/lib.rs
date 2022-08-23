@@ -61,7 +61,7 @@
 //! Note that this is only supported for two-dimensional, orthographic cameras,
 //! but pull requests for 3D support are welcome!
 //!
-//! Note that if you do not specify a [`MainCamera`] resource, the [`MousePos`] and [`MousePosWorld`]
+//! If you do not specify a [`MainCamera`] resource, the [`MousePos`] and [`MousePosWorld`]
 //! resources will still exist, but they will always be zero.
 //!
 //! ## Queries
