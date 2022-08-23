@@ -22,7 +22,10 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<WindowDescriptor>) {
     // Spawn a Camera
-    let camera_id = commands.spawn_bundle(Camera2dBundle::default()).id();
+    let camera_id = commands
+        .spawn_bundle(Camera2dBundle::default())
+        .insert(MousePos::default())
+        .id();
     commands.insert_resource(MainCamera(camera_id));
 
     // Reference for the origin

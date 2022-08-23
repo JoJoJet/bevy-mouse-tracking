@@ -7,13 +7,6 @@ pub struct MousePosPlugin;
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
-        // System to add mouse tracking components.
-        // Runs once at the end of each frame. This means that no cameras will have
-        // mouse tracking components until after the first frame.
-        // This might cause some issues, but it's probably for the best since,
-        // during the first frame, nothing has been rendered yet.
-        app.add_system_to_stage(CoreStage::PostUpdate, add_pos_components);
-
         app.add_system_to_stage(CoreStage::First, update_pos);
         app.add_system_to_stage(CoreStage::First, update_pos_ortho.after(update_pos));
 
@@ -22,14 +15,6 @@ impl Plugin for MousePosPlugin {
         app.add_system_to_stage(CoreStage::First, update_resources.after(update_pos_ortho));
     }
 }
-
-/// Marker component for cameras that should be excluded from mouse tracking.
-/// Any entity with this component will be ignored by [`MousePosPlugin`].
-///
-/// If you add the [`ExcludeMouseTracking`] component to an entity that also has the [`MainCamera`] component, the app will panic.
-/// You should remove either [`ExcludeMouseTracking`] or [`MainCamera`], as they should not be used together.
-#[derive(Debug, Clone, Copy, Component)]
-pub struct ExcludeMouseTracking;
 
 /// The location of the mouse in screenspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
@@ -48,32 +33,6 @@ impl Deref for MousePos {
 impl Display for MousePos {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
-    }
-}
-
-type NeedsScreenspaceTracking = (Without<MousePos>, Without<ExcludeMouseTracking>);
-type NeedsWorldspaceTracking = (Without<MousePosWorld>, Without<ExcludeMouseTracking>);
-
-fn add_pos_components(
-    cameras1: Query<(Entity, &Camera), NeedsScreenspaceTracking>,
-    cameras2: Query<Entity, (With<Camera>, NeedsWorldspaceTracking)>,
-    windows: Res<Windows>,
-    mut commands: Commands,
-) {
-    for (e, camera) in cameras1.iter() {
-        if let RenderTarget::Window(window_id) = camera.target {
-            // get the initial position of the cursor.
-            let position = windows
-                .get(window_id)
-                .and_then(|w| w.cursor_position())
-                .unwrap_or_default();
-            commands.entity(e).insert(MousePos(position));
-        }
-    }
-    for cam in cameras2.iter() {
-        commands
-            .entity(cam)
-            .insert(MousePosWorld(Default::default()));
     }
 }
 
@@ -114,10 +73,12 @@ impl Deref for MousePosWorld {
 
 fn update_pos_ortho(
     mut tracking: Query<(Entity, &mut MousePosWorld, &MousePos), Changed<MousePos>>,
-    cameras: Query<(&GlobalTransform, &OrthographicProjection), Without<ExcludeMouseTracking>>,
+    cameras: Query<(&GlobalTransform, &OrthographicProjection)>,
 ) {
     for (camera, mut world, screen) in tracking.iter_mut() {
-        let (camera, proj) = cameras.get(camera).expect("only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component");
+        let (camera, proj) = cameras
+            .get(camera)
+            .expect("only orthographic cameras are supported");
         let offset = Vec2::new(proj.left, proj.bottom);
 
         // Must multiply by projection scale before applying camera global transform
