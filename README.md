@@ -6,17 +6,11 @@
 [![bevy_mouse_tracking on crates.io](https://img.shields.io/crates/v/bevy_mouse_tracking_plugin.svg)](https://crates.io/crates/bevy_mouse_tracking_plugin)
 [![bevy_mouse_tracking docs](https://img.shields.io/badge/docs-docs.rs-orange.svg)](https://docs.rs/bevy_mouse_tracking_plugin)
 
-Tracking the mouse in `bevy` is kind of annoying.
-You gotta use [`Events`], and [`EventReader`]s, and even then, they only
-get called when the mouse actually *moves*.
+This crate aims to make mouse tracking both effortless and explicit.
+Tracking is opt-in and handled opaquely by this plugin.
 
-[`Events`]: bevy::ecs::event::Events
-[`EventReader`]: bevy::ecs::event::EventReader
-
-This crate aims to make this as easy as possible, by providing a
-static [resource](bevy::ecs::system::Res) that tracks the mouse position every frame.
-
-This crate also supports more complex use cases such as multiple cameras, which are discussed further down.
+The mouse can be tracked on a per-camera basis by querying for tracking components.
+Additionally, a global resource is maintained that tracks the main camera, if applicable.
 
 ## Basics
 
