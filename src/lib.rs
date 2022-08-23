@@ -33,7 +33,7 @@
 //! // Spawn a camera, and specify it as the main camera.
 //!
 //! fn setup(mut commands: Commands) {
-//!     let camera_id = commands.spawn(Camera2dBundle::default()).id();
+//!     let camera_id = commands.spawn_bundle(Camera2dBundle::default()).id();
 //!     commands.insert_resource(MainCamera(camera_id));
 //! }
 //!
