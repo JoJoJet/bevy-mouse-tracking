@@ -13,13 +13,6 @@ pub enum MousePosPlugin {
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
-        enum MouseSystem {
-            ScreenPos,
-            WorldPos,
-            FindMain,
-        }
-
         // System to add mouse tracking components.
         // Runs once at the end of each frame. This means that no cameras will have
         // mouse tracking components until after the first frame.
@@ -27,13 +20,8 @@ impl Plugin for MousePosPlugin {
         // during the first frame, nothing has been rendered yet.
         app.add_system_to_stage(CoreStage::PostUpdate, add_pos_components);
 
-        app.add_system_to_stage(CoreStage::First, update_pos.label(MouseSystem::ScreenPos));
-        app.add_system_to_stage(
-            CoreStage::First,
-            update_pos_ortho
-                .label(MouseSystem::WorldPos)
-                .after(MouseSystem::ScreenPos),
-        );
+        app.add_system_to_stage(CoreStage::First, update_pos);
+        app.add_system_to_stage(CoreStage::First, update_pos_ortho.after(update_pos));
 
         match self {
             Self::SingleCamera => {
@@ -45,7 +33,6 @@ impl Plugin for MousePosPlugin {
                 app.add_system_set_to_stage(
                     CoreStage::First,
                     SystemSet::new()
-                        .label(MouseSystem::FindMain)
                         .with_run_criteria(main_camera_changed)
                         .with_system(find_main_camera),
                 );
@@ -53,8 +40,8 @@ impl Plugin for MousePosPlugin {
                 app.add_system_to_stage(
                     CoreStage::First,
                     update_resources
-                        .after(MouseSystem::WorldPos)
-                        .after(MouseSystem::FindMain),
+                        .after(update_pos_ortho)
+                        .after(find_main_camera),
                 );
             }
             Self::MultiCamera => {}
