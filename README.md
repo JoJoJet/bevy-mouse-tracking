@@ -6,23 +6,17 @@
 [![bevy_mouse_tracking on crates.io](https://img.shields.io/crates/v/bevy_mouse_tracking_plugin.svg)](https://crates.io/crates/bevy_mouse_tracking_plugin)
 [![bevy_mouse_tracking docs](https://img.shields.io/badge/docs-docs.rs-orange.svg)](https://docs.rs/bevy_mouse_tracking_plugin)
 
-Tracking the mouse in `bevy` is kind of annoying.
-You gotta use [`Events`], and [`EventReader`]s, and even then, they only
-get called when the mouse actually *moves*.
+This crate aims to make mouse tracking both effortless and explicit.
+Tracking is opt-in and handled opaquely by this plugin.
 
-[`Events`]: bevy::ecs::event::Events
-[`EventReader`]: bevy::ecs::event::EventReader
-
-This crate aims to make this as easy as possible, by providing a
-static [resource](bevy::ecs::system::Res) that tracks the mouse position every frame.
-
-This crate also supports more complex use cases such as multiple cameras, which are discussed further down.
+The mouse can be tracked on a per-camera basis by querying for tracking components.
+Additionally, a global resource is maintained that tracks the main camera, if applicable.
 
 ## Basics
 
 ```rust
 use bevy::prelude::*;
-use bevy_mouse_tracking_plugin::{MousePosPlugin, MainCamera};
+use bevy_mouse_tracking_plugin::MousePosPlugin;
 
 // First, add the plugin to your `App`.
 
@@ -33,94 +27,86 @@ App::new()
     .add_system(dbg_mouse)
     // ...
 
-// Spawn a camera, and specify it as the main camera.
+use bevy_mouse_tracking_plugin::MousePos;
 
 fn setup(mut commands: Commands) {
-    let camera_id = commands.spawn_bundle(Camera2dBundle::default()).id();
+    commands
+        // Spawn a camera bundle
+        .spawn_bundle(Camera2dBundle::default())
+        // Opt in to mouse tracking
+        .insert(MousePos::default());
+}
+
+// Now, we can track the mouse position by querying for it.
+
+fn dbg_mouse(mouse: Query<&MousePos>) {
+    // This will print the screen-space location of the mouse on every frame.
+    eprintln!("{}", *mouse.single());
+    // If we did `mouse.iter()` instead, this will naturally work for multiple cameras.
+}
+```
+
+Having to call `Query::single` is a bit annoying, and potentially error-prone.
+Instead, we can specify a main camera, which the plugin will treat specially.
+
+```rust
+use bevy_mouse_tracking_plugin::MainCamera;
+
+fn setup(mut commands: Commands) {
+    let camera_id = commands
+        // ...spawn a camera bundle, etc.
+        //
+        // Get the ID of the camera entity we just spawned.
+        .id();
+
+    // Define the `MainCamera` resource.
     commands.insert_resource(MainCamera(camera_id));
 }
 
-// With that, you can now easily track the main camera through a global resource.
+// Now that we've specified the main camera, we can get the mouse position using a global resource.
 
-use bevy_mouse_tracking_plugin::MousePos;
 fn dbg_mouse(mouse: Res<MousePos>) {
     // This will print the screen-space location of the mouse on every frame.
     eprintln!("{}", *mouse);
 }
 ```
 
+## World-space
+
 We can do better than just screen-space: we support automatic
-transformation to world-space coordinates via the [`MousePosWorld`] resource.
+transformation to world-space coordinates via [`MousePosWorld`]
+-- this is can be accessed as either a component or a resource.
 
 ```rust
 use bevy_mouse_tracking_plugin::MousePosWorld;
-fn dbg_world(mouse: Res<MousePosWorld>) {
+
+fn setup(mut commands: Commands) {
+    let camera_id = commands
+        // ...
+        // Opt in to mouse tracking.
+        // Adding `MousePosWorld` will automatically add `MousePos`.
+        .insert(MousePosWorld::default())
+        // Get the ID, define main camera resource, etc.
+        // ...
+}
+
+// Getting the world-space position using a query.
+fn dbg_world_single(mouse: Query<&MousePosWorld>) {
+    // This will print the world-space position of the mouse on every frame.
+    eprintln!("{}", *mouse.single());
+}
+
+// Getting it using the resource.
+fn dbg_world_res(mouse: Res<MousePosWorld>) {
     eprintln!("{}", *mouse);
 }
 ```
 
-This will print the world-space location of the mouse on every frame.  
 Note that this is only supported for two-dimensional, orthographic cameras,
 but pull requests for 3D support are welcome!
 
 If you do not specify a [`MainCamera`] resource, the [`MousePos`] and [`MousePosWorld`]
 resources will still exist, but they will always be zero.
-
-### Queries
-
-If you want to get mouse tracking information relative to each camera individually,
-simply [query](bevy::ecs::system::Query) for `MousePos` or `MousePosWorld` as a
-_component_ instead of as a resource.
-
-```rust
-
-App::new()
-    // plugins omitted...
-    .add_startup_system(setup)
-    .add_system(dbg_for_each)
-    // ...
-
-fn setup(mut commands: Commands) {
-    // Spawn the main camera for the game...
-    commands.spawn_bundle(Camera2dBundle::default());
-    // ...as well as a special overhead camera for the minimap.
-    commands.spawn_bundle(MinimapCameraBundle::default());
-}
-
-fn dbg_for_each(mouse_pos: Query<&MousePosWorld>) {
-    // This prints the mouse position twice every frame:
-    // once relative to the main camera, and once relative to the minimap camera.
-    for pos in mouse_pos.iter() {
-        eprintln!("{}", *pos);
-    }
-}
-```
-
-### Opt-out of tracking for cameras
-
-If you wish to have a camera be excluded from mouse tracking for whatever reason, you may give it the [`ExcludeMouseTracking`] component.
-
-```rust
-    commands.spawn_bundle(Camera2dBundle::default())
-        .insert(ExcludeMouseTracking);
-```
-
-This camera will not have a [`MousePos`] or a [`MousePosWorld`], as it is completely excluded from mouse tracking.
-
-One reason to do this is because this crate does not currently support cameras with projections other than Bevy's [`OrthographicProjection`](bevy::render::camera::OrthographicProjection). If you use such a camera, even if you don't use it for tracking mouse position, you will find that it panics:
-
-```text
-thread 'main' panicked at 'only orthographic cameras are supported -- consider adding an ExcludeMouseTracking component: QueryDoesNotMatch(5v0)', src\mouse_pos.rs:159:50
-```
-
-To get around this, you may choose to have the camera opt-out.
-
-```rust
-    commands.spawn_bundle(Camera3dBundle {
-        projection: Projection::from(PerspectiveProjection::default()),
-        ..default()
-    }).insert(ExcludeMouseTracking);
-```
 
 ## Mouse motion
 
