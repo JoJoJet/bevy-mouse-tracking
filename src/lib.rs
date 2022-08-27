@@ -12,7 +12,7 @@
 //!
 //! ```
 //! use bevy::prelude::*;
-//! use bevy_mouse_tracking_plugin::{MousePosPlugin, InsertExt as _};
+//! use bevy_mouse_tracking_plugin::prelude::*;
 //!
 //! // First, add the plugin to your `App`.
 //!
@@ -24,7 +24,6 @@
 //!     // ...
 //! #    .update();
 //!
-//! use bevy_mouse_tracking_plugin::MousePos;
 //!
 //! fn setup(mut commands: Commands) {
 //!     commands
@@ -35,6 +34,8 @@
 //! }
 //!
 //! // Now, we can track the mouse position by querying for it.
+//!
+//! use bevy_mouse_tracking_plugin::MousePos;
 //!
 //! fn dbg_mouse(mouse: Query<&MousePos>) {
 //!     // This will print the screen-space location of the mouse on every frame.
@@ -48,7 +49,7 @@
 //!
 //! ```
 //! # use bevy::prelude::*;
-//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MousePos, InsertExt};
+//! # use bevy_mouse_tracking_plugin::{prelude::*, MousePos};
 //! # App::new()
 //! #    .add_plugins(DefaultPlugins)
 //! #    .add_plugin(MousePosPlugin)
@@ -86,7 +87,7 @@
 //!
 //! ```
 //! # use bevy::prelude::*;
-//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MousePos, MainCamera, InsertExt};
+//! # use bevy_mouse_tracking_plugin::{prelude::*, MousePos, MainCamera};
 //! # App::new()
 //! #    .add_plugins(DefaultPlugins)
 //! #    .add_plugin(MousePosPlugin)
