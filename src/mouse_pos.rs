@@ -7,9 +7,6 @@ pub struct MousePosPlugin;
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(StartupStage::PostStartup, add_dependent_pos);
-        app.add_system_to_stage(CoreStage::Last, add_dependent_pos);
-
         app.add_system_to_stage(CoreStage::First, update_pos);
         app.add_system_to_stage(CoreStage::First, update_pos_ortho.after(update_pos));
 
@@ -103,15 +100,6 @@ fn update_pos(
         {
             pos.0 = position;
         }
-    }
-}
-
-fn add_dependent_pos(
-    needs_screen_pos: Query<Entity, (With<MousePosWorld>, Without<MousePos>)>,
-    mut commands: Commands,
-) {
-    for id in &needs_screen_pos {
-        commands.add(AddMouseTracking::new(id));
     }
 }
 
