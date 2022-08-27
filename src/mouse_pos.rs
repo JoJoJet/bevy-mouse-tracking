@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops::Deref};
 
-use bevy::{prelude::*, render::camera::RenderTarget};
+use bevy::{ecs::system::Command, prelude::*, render::camera::RenderTarget};
 
 /// Plugin that tracks the mouse location.
 pub struct MousePosPlugin;
@@ -13,8 +13,8 @@ impl Plugin for MousePosPlugin {
         app.add_system_to_stage(CoreStage::First, update_pos);
         app.add_system_to_stage(CoreStage::First, update_pos_ortho.after(update_pos));
 
-        app.init_resource::<MousePos>();
-        app.init_resource::<MousePosWorld>();
+        app.insert_resource(MousePos(default()));
+        app.insert_resource(MousePosWorld(default()));
         app.add_system_to_stage(CoreStage::First, update_resources.after(update_pos_ortho));
     }
 }
@@ -22,7 +22,7 @@ impl Plugin for MousePosPlugin {
 /// The location of the mouse in screenspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
 /// on this should come after `CoreStage::First`.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Component)]
+#[derive(Debug, Clone, Copy, PartialEq, Component)]
 pub struct MousePos(Vec2);
 
 impl Deref for MousePos {
@@ -36,6 +36,60 @@ impl Deref for MousePos {
 impl Display for MousePos {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+/// A [`Command`] that adds the [`MousePos`] component to a [`Camera`], ensuring that the initial cursor position is correct.
+///
+/// The simplest way to enable mouse tracking for a camera is to add the component `MousePos::default`
+/// -- however, doing this means that the initial value for the cursor position will be zero. This command handles that automatically.
+///
+/// To add both `MousePos` and [`MousePosWorld`], consider using `AddWorldTracking`.
+pub struct AddMouseTracking(Entity);
+
+impl AddMouseTracking {
+    pub const fn new(id: Entity) -> Self {
+        Self(id)
+    }
+}
+
+impl Command for AddMouseTracking {
+    fn write(self, world: &mut World) {
+        #[track_caller]
+        #[cold]
+        fn no_camera(camera: impl std::fmt::Debug) -> ! {
+            panic!("tried to call the command `AddMouseTracking` on non-camera entity '{camera:?}'")
+        }
+        #[track_caller]
+        #[cold]
+        fn image_camera(camera: impl std::fmt::Debug) -> ! {
+            panic!(
+                "tried to call the command `AddMouseTracking` on a camera ({camera:?}) that renders to an image",
+            )
+        }
+        #[track_caller]
+        #[cold]
+        fn no_window(window: impl std::fmt::Debug) -> ! {
+            panic!(
+                "tried to call the command `AddMouseTracking` on a camera ({window:?}) that renders to an image",
+            )
+        }
+
+        let camera_id = self.0;
+        let camera = world
+            .entity(camera_id)
+            .get::<Camera>()
+            .unwrap_or_else(|| no_camera(camera_id));
+        let window = match camera.target {
+            RenderTarget::Window(id) => id,
+            RenderTarget::Image(_) => image_camera(camera_id),
+        };
+        let window = world
+            .resource::<Windows>()
+            .get(window)
+            .unwrap_or_else(|| no_window(window));
+        let mouse_pos = window.cursor_position().unwrap_or_default();
+        world.entity_mut(camera_id).insert(MousePos(mouse_pos));
     }
 }
 
@@ -59,7 +113,7 @@ fn add_dependent_pos(
     mut commands: Commands,
 ) {
     for id in &needs_screen_pos {
-        commands.entity(id).insert(MousePos::default());
+        commands.add(AddMouseTracking::new(id));
     }
 }
 
@@ -116,7 +170,7 @@ fn update_resources(
     } else {
         // If the main camera was unset since last frame, zero out the resources.
         if *main_defined_last_frame {
-            *screen_res = MousePos::default();
+            *screen_res = MousePos(default());
             *world_res = MousePosWorld::default();
             *main_defined_last_frame = false;
         }
