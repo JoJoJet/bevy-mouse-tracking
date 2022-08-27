@@ -12,7 +12,7 @@
 //!
 //! ```
 //! use bevy::prelude::*;
-//! use bevy_mouse_tracking_plugin::MousePosPlugin;
+//! use bevy_mouse_tracking_plugin::{MousePosPlugin, InsertExt as _};
 //!
 //! // First, add the plugin to your `App`.
 //!
@@ -31,7 +31,7 @@
 //!         // Spawn a camera bundle
 //!         .spawn_bundle(Camera2dBundle::default())
 //!         // Opt in to mouse tracking
-//!         .insert(MousePos::default());
+//!         .add_mouse_tracking();
 //! }
 //!
 //! // Now, we can track the mouse position by querying for it.
@@ -48,7 +48,7 @@
 //!
 //! ```
 //! # use bevy::prelude::*;
-//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MousePos};
+//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MousePos, InsertExt};
 //! # App::new()
 //! #    .add_plugins(DefaultPlugins)
 //! #    .add_plugin(MousePosPlugin)
@@ -61,7 +61,7 @@
 //!     let camera_id = commands
 //!         // ...spawn a camera bundle, etc.
 //! #        .spawn_bundle(Camera2dBundle::default())
-//! #        .insert(MousePos::default())
+//! #        .add_mouse_tracking()
 //!         //
 //!         // Get the ID of the camera entity we just spawned.
 //!         .id();
@@ -86,7 +86,7 @@
 //!
 //! ```
 //! # use bevy::prelude::*;
-//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MousePos, MainCamera};
+//! # use bevy_mouse_tracking_plugin::{MousePosPlugin, MousePos, MainCamera, InsertExt};
 //! # App::new()
 //! #    .add_plugins(DefaultPlugins)
 //! #    .add_plugin(MousePosPlugin)
@@ -100,9 +100,9 @@
 //!     let camera_id = commands
 //! #        .spawn_bundle(Camera2dBundle::default())
 //!         // ...
-//!         // Opt in to mouse tracking.
-//!         // Adding `MousePosWorld` will automatically add `MousePos`.
-//!         .insert(MousePosWorld::default())
+//!         // Opt in to world-space mouse tracking.
+//!         // This will automatically opt into screen-space tracking.
+//!         .add_world_tracking()
 //!         // Get the ID, define main camera resource, etc.
 //!         // ...
 //! #        .id();
