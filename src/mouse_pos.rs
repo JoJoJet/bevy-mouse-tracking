@@ -25,7 +25,19 @@ impl Plugin for MousePosPlugin {
 
 /// Extension trait for [`EntityCommands`] and [`EntityMut`] that allows adding mouse tracking to a camera entity.
 pub trait InsertExt {
+    /// Adds the mouse tracking component [`MousePos`] to this entity, with a correct initial value.
+    ///
+    /// # Panics
+    /// * If the current entity does not have a [`Camera`] component.
+    /// * If there is a camera, but it does not render to a window.
     fn add_mouse_tracking(&mut self) -> &mut Self;
+    /// Adds the mouse tracking component [`MousePosWorld`] to this entity, with a correct initial value.
+    /// It is unnecessary to call both this method and [`add_mouse_tracking`](#method.add_mouse_tracking).
+    ///
+    /// # Panics
+    /// * If the current entity does not have a [`Camera`] component.
+    /// * If there is a camera, but it does not render to a window.
+    /// * If the camera does not have an [`OrthographicProjection`] component.
     fn add_world_tracking(&mut self) -> &mut Self;
 }
 
@@ -175,6 +187,8 @@ impl Deref for MousePosWorld {
 
 /// A [`Command`] that adds the component [`MousePosWorld`] to an entity, with a correct initial position.
 /// For more details, see the docs for [`AddMouseTracking`].
+///
+/// Executing this command automatically executes `AddMouseTracking`.
 pub struct AddWorldTracking(Entity);
 
 impl AddWorldTracking {
