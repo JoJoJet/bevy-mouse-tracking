@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use bevy_mouse_tracking_plugin::{MainCamera, MousePos, MousePosPlugin};
+use bevy_mouse_tracking_plugin::{InsertExt as _, MainCamera, MousePos, MousePosPlugin};
 
 #[derive(Component)]
 struct Cursor;
@@ -24,7 +24,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
     // Spawn a Camera
     let camera_id = commands
         .spawn_bundle(Camera2dBundle::default())
-        .insert(MousePos::default())
+        .add_mouse_tracking()
         .id();
     commands.insert_resource(MainCamera(camera_id));
 

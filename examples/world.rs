@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use bevy_mouse_tracking_plugin::{MainCamera, MousePos, MousePosPlugin, MousePosWorld};
+use bevy_mouse_tracking_plugin::{
+    InsertExt as _, MainCamera, MousePos, MousePosPlugin, MousePosWorld,
+};
 
 #[derive(Component)]
 struct Cursor;
@@ -26,7 +28,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
     camera_bundle.projection.scale = 0.5; // works fine with non-unit scaling.
     let camera_id = commands
         .spawn_bundle(camera_bundle)
-        .insert(MousePosWorld::default())
+        .add_world_tracking()
         .id();
     commands.insert_resource(MainCamera(camera_id));
 
