@@ -134,11 +134,13 @@
 //!
 //! [`Res`]: bevy::ecs::system::Res
 
-mod mouse_pos;
-pub use mouse_pos::{
-    AddMouseTracking, AddWorldTracking, InsertExt, MainCamera, MousePos, MousePosPlugin,
-    MousePosWorld,
-};
+pub mod prelude {
+    pub use crate::mouse_motion::MouseMotionPlugin;
+    pub use crate::mouse_pos::{InsertExt, MousePosPlugin};
+}
 
-mod mouse_motion;
-pub use mouse_motion::{MouseMotion, MouseMotionPlugin};
+pub mod mouse_pos;
+pub use mouse_pos::{MainCamera, MousePos, MousePosWorld};
+
+pub mod mouse_motion;
+pub use mouse_motion::MouseMotion;
