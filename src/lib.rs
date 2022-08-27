@@ -136,7 +136,8 @@
 
 mod mouse_pos;
 pub use mouse_pos::{
-    AddMouseTracking, AddWorldTracking, MainCamera, MousePos, MousePosPlugin, MousePosWorld,
+    AddMouseTracking, AddWorldTracking, InsertExt, MainCamera, MousePos, MousePosPlugin,
+    MousePosWorld,
 };
 
 mod mouse_motion;

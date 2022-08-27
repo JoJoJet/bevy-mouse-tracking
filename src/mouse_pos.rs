@@ -1,6 +1,13 @@
 use std::{fmt::Display, ops::Deref};
 
-use bevy::{ecs::system::Command, prelude::*, render::camera::RenderTarget};
+use bevy::{
+    ecs::{
+        system::{Command, EntityCommands},
+        world::EntityMut,
+    },
+    prelude::*,
+    render::camera::RenderTarget,
+};
 
 /// Plugin that tracks the mouse location.
 pub struct MousePosPlugin;
@@ -13,6 +20,42 @@ impl Plugin for MousePosPlugin {
         app.insert_resource(MousePos(default()));
         app.insert_resource(MousePosWorld(default()));
         app.add_system_to_stage(CoreStage::First, update_resources.after(update_pos_ortho));
+    }
+}
+
+/// Extension trait for [`EntityCommands`] and [`EntityMut`] that allows adding mouse tracking to a camera entity.
+pub trait InsertExt {
+    fn add_mouse_tracking(&mut self) -> &mut Self;
+    fn add_world_tracking(&mut self) -> &mut Self;
+}
+
+impl<'w> InsertExt for EntityMut<'w> {
+    fn add_mouse_tracking(&mut self) -> &mut Self {
+        // SAFETY: We call `self.update_location()` immediately after `self.world_mut()`,
+        // so even if the location changed, that's okay.
+        AddMouseTracking(self.id()).write(unsafe { self.world_mut() });
+        self.update_location();
+        self
+    }
+    fn add_world_tracking(&mut self) -> &mut Self {
+        // SAFETY: We call `self.update_location()` immediately after `self.world_mut()`,
+        // so even if the location changed, that's okay.
+        AddWorldTracking(self.id()).write(unsafe { self.world_mut() });
+        self.update_location();
+        self
+    }
+}
+
+impl<'w, 's, 'a> InsertExt for EntityCommands<'w, 's, 'a> {
+    fn add_mouse_tracking(&mut self) -> &mut Self {
+        let cmd = AddMouseTracking(self.id());
+        self.commands().add(cmd);
+        self
+    }
+    fn add_world_tracking(&mut self) -> &mut Self {
+        let cmd = AddWorldTracking(self.id());
+        self.commands().add(cmd);
+        self
     }
 }
 
