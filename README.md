@@ -16,7 +16,7 @@ Additionally, a global resource is maintained that tracks the main camera, if ap
 
 ```rust
 use bevy::prelude::*;
-use bevy_mouse_tracking_plugin::{MousePosPlugin, InsertExt as _};
+use bevy_mouse_tracking_plugin::prelude::*;
 
 // First, add the plugin to your `App`.
 
@@ -27,7 +27,6 @@ App::new()
     .add_system(dbg_mouse)
     // ...
 
-use bevy_mouse_tracking_plugin::MousePos;
 
 fn setup(mut commands: Commands) {
     commands
@@ -38,6 +37,8 @@ fn setup(mut commands: Commands) {
 }
 
 // Now, we can track the mouse position by querying for it.
+
+use bevy_mouse_tracking_plugin::MousePos;
 
 fn dbg_mouse(mouse: Query<&MousePos>) {
     // This will print the screen-space location of the mouse on every frame.

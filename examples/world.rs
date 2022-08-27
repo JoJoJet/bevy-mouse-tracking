@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 
-use bevy_mouse_tracking_plugin::{
-    InsertExt as _, MainCamera, MousePos, MousePosPlugin, MousePosWorld,
-};
+use bevy_mouse_tracking_plugin::{prelude::*, MainCamera, MousePos, MousePosWorld};
 
 #[derive(Component)]
 struct Cursor;
