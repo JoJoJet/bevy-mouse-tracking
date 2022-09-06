@@ -72,7 +72,7 @@ fn dbg_mouse(mouse: Res<MousePos>) {
 
 ## World-space
 
-We can do better than just screen-space: we support automatic
+We can do better than just screen-space: this crate supports automatic
 transformation to world-space coordinates via [`MousePosWorld`]
 -- this is can be accessed as either a component or a resource.
 
@@ -103,7 +103,7 @@ fn dbg_world_res(mouse: Res<MousePosWorld>) {
 Note that this is only supported for two-dimensional, orthographic cameras,
 but pull requests for 3D support are welcome!
 
-If you do not specify a [`MainCamera`] resource, the [`MousePos`] and [`MousePosWorld`]
+If you do not specify a [`MainCamera`], the [`MousePos`] and [`MousePosWorld`]
 resources will still exist, but they will always be zero.
 
 ## Mouse motion
