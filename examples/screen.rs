@@ -22,11 +22,10 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<WindowDescriptor>) {
     // Spawn a Camera
-    let camera_id = commands
+    commands
         .spawn_bundle(Camera2dBundle::default())
         .add_mouse_tracking()
-        .id();
-    commands.insert_resource(MainCamera(camera_id));
+        .insert(MainCamera);
 
     // Reference for the origin
     commands.spawn_bundle(SpriteBundle {

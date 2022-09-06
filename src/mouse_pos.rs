@@ -22,7 +22,12 @@ impl Plugin for MousePosPlugin {
 
         app.insert_resource(MousePos(default()));
         app.insert_resource(MousePosWorld(default()));
-        app.add_system_to_stage(CoreStage::First, update_resources.after(update_pos_ortho));
+        app.init_resource::<MainCameraStore>();
+        app.add_system_to_stage(CoreStage::First, update_main);
+        app.add_system_to_stage(
+            CoreStage::First,
+            update_resources.after(update_pos_ortho).after(update_main),
+        );
     }
 }
 
@@ -229,20 +234,57 @@ fn compute_world_pos_ortho(
     transform.mul_vec3(((screen_pos + offset) * proj.scale).extend(0.0))
 }
 
+/// Marker component for the main camera. If no main camera is specified, all cameras will be treated equally.
+#[derive(Component)]
+pub struct MainCamera;
+
 /// Resource that specifies the main camera. If this resource is not defined, all cameras will be treated equally.
-pub struct MainCamera(pub Entity);
+#[derive(Default)]
+struct MainCameraStore(Option<Entity>);
+
+fn update_main(
+    mut current_main: ResMut<MainCameraStore>,
+    added_main: Query<Entity, Added<MainCamera>>,
+    removed_main: RemovedComponents<MainCamera>,
+) {
+    // List of all entities known to have the MainCamera marker.
+    // This includes the current main camera, and all entities with the component added this frame.
+    let mut with_marker: Vec<_> = Option::into_iter(current_main.0)
+        .chain(&added_main)
+        .collect();
+    // Ditch any removed components.
+    for rem in removed_main.iter() {
+        if let Some(idx) = with_marker.iter().position(|&x| x == rem) {
+            with_marker.remove(idx);
+        }
+    }
+    if let [main] = *with_marker {
+        if current_main.0 != Some(main) {
+            current_main.0 = Some(main);
+        }
+    } else {
+        // Make sure there aren't multiple `MainCamera`s defined.
+        assert!(
+            with_marker.is_empty(),
+            "`bevy_mouse_tracking_plugin`: there cannot be more than one entity with a `MainCamera` component",
+        );
+        if current_main.0.is_some() {
+            current_main.0 = None;
+        }
+    }
+}
 
 fn update_resources(
     mut screen_res: ResMut<MousePos>,
     mut world_res: ResMut<MousePosWorld>,
-    main: Option<Res<MainCamera>>,
+    main: Res<MainCameraStore>,
     screen: Query<&MousePos, Changed<MousePos>>,
     world: Query<&MousePosWorld, Changed<MousePosWorld>>,
     mut main_defined_last_frame: Local<bool>,
 ) {
-    let main = if let Some(main) = main {
+    let main = if let Some(main) = main.0 {
         *main_defined_last_frame = true;
-        main.0
+        main
     } else {
         // If the main camera was unset since last frame, zero out the resources.
         if *main_defined_last_frame {

@@ -24,11 +24,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
     // Spawn a Camera
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scale = 0.5; // works fine with non-unit scaling.
-    let camera_id = commands
+    commands
         .spawn_bundle(camera_bundle)
         .add_world_tracking()
-        .id();
-    commands.insert_resource(MainCamera(camera_id));
+        .insert(MainCamera);
 
     // Reference for the origin
     commands.spawn_bundle(SpriteBundle {
