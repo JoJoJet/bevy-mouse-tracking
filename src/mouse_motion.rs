@@ -8,7 +8,10 @@ pub use bevy::input::mouse::MouseMotion;
 impl bevy::app::Plugin for MouseMotionPlugin {
     fn build(&self, app: &mut bevy::app::App) {
         app.insert_resource(MouseMotion { delta: Vec2::ZERO });
-        app.add_system_to_stage(CoreStage::First, update_mouse_motion);
+        app.add_system_to_stage(
+            CoreStage::First,
+            update_mouse_motion.after(Events::<MouseMotion>::update_system),
+        );
     }
 }
 
