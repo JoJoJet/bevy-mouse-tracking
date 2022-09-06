@@ -54,14 +54,12 @@ Instead, we can specify a main camera, which the plugin will treat specially.
 use bevy_mouse_tracking_plugin::MainCamera;
 
 fn setup(mut commands: Commands) {
-    let camera_id = commands
-        // ...spawn a camera bundle, etc.
-        //
-        // Get the ID of the camera entity we just spawned.
-        .id();
-
-    // Define the `MainCamera` resource.
-    commands.insert_resource(MainCamera(camera_id));
+    commands
+        // Spawn a camera with tracking.
+        .spawn_bundle(Camera2dBundle::default())
+        .add_mouse_tracking()
+        // Add a component to mark it as the main camera.
+        .insert(MainCamera);
 }
 
 // Now that we've specified the main camera, we can get the mouse position using a global resource.
@@ -74,7 +72,7 @@ fn dbg_mouse(mouse: Res<MousePos>) {
 
 ## World-space
 
-We can do better than just screen-space: we support automatic
+We can do better than just screen-space: this crate supports automatic
 transformation to world-space coordinates via [`MousePosWorld`]
 -- this is can be accessed as either a component or a resource.
 
@@ -82,12 +80,11 @@ transformation to world-space coordinates via [`MousePosWorld`]
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
 fn setup(mut commands: Commands) {
-    let camera_id = commands
-        // ...
+    commands
+        .spawn_bundle(Camera2dBundle::default())
         // Opt in to world-space mouse tracking.
         // This will automatically opt into screen-space tracking.
         .add_world_tracking()
-        // Get the ID, define main camera resource, etc.
         // ...
 }
 
@@ -106,7 +103,7 @@ fn dbg_world_res(mouse: Res<MousePosWorld>) {
 Note that this is only supported for two-dimensional, orthographic cameras,
 but pull requests for 3D support are welcome!
 
-If you do not specify a [`MainCamera`] resource, the [`MousePos`] and [`MousePosWorld`]
+If you do not specify a [`MainCamera`], the [`MousePos`] and [`MousePosWorld`]
 resources will still exist, but they will always be zero.
 
 ## Mouse motion
