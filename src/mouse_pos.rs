@@ -22,12 +22,7 @@ impl Plugin for MousePosPlugin {
 
         app.insert_resource(MousePos(default()));
         app.insert_resource(MousePosWorld(default()));
-        app.init_resource::<MainCameraStore>();
-        app.add_system_to_stage(CoreStage::First, update_main);
-        app.add_system_to_stage(
-            CoreStage::First,
-            update_resources.after(update_pos_ortho).after(update_main),
-        );
+        app.add_system_to_stage(CoreStage::First, update_resources.after(update_pos_ortho));
     }
 }
 
@@ -238,67 +233,48 @@ fn compute_world_pos_ortho(
 #[derive(Component)]
 pub struct MainCamera;
 
-/// Resource that specifies the main camera. If this resource is not defined, all cameras will be treated equally.
-#[derive(Default)]
-struct MainCameraStore(Option<Entity>);
-
-fn update_main(
-    mut current_main: ResMut<MainCameraStore>,
+fn update_resources(
+    mut last_main: Local<Option<Entity>>,
     added_main: Query<Entity, Added<MainCamera>>,
     removed_main: RemovedComponents<MainCamera>,
+    mut screen_res: ResMut<MousePos>,
+    mut world_res: ResMut<MousePosWorld>,
+    screen: Query<&MousePos>,
+    world: Query<&MousePosWorld>,
 ) {
     // List of all entities known to have the MainCamera marker.
-    // This includes the current main camera, and all entities with the component added this frame.
-    let mut with_marker: Vec<_> = Option::into_iter(current_main.0)
-        .chain(&added_main)
-        .collect();
+    // This includes the main camera from last frame, and all entities with the component added this frame.
+    let mut with_marker: Vec<_> = Option::into_iter(*last_main).chain(&added_main).collect();
     // Ditch any removed components.
     for rem in removed_main.iter() {
         if let Some(idx) = with_marker.iter().position(|&x| x == rem) {
             with_marker.remove(idx);
         }
     }
-    if let [main] = *with_marker {
-        if current_main.0 != Some(main) {
-            current_main.0 = Some(main);
+    match *with_marker {
+        // If there is only one main camera, update the resources using it.
+        [main] => {
+            *last_main = Some(main);
+            let screen = screen.get(main).map_or_else(|_| default(), |s| s.0);
+            if screen_res.0 != screen {
+                screen_res.0 = screen;
+            }
+            let world = world.get(main).map_or_else(|_| default(), |w| w.0);
+            if world_res.0 != world {
+                world_res.0 = world;
+            }
         }
-    } else {
-        // Make sure there aren't multiple `MainCamera`s defined.
-        assert!(
-            with_marker.is_empty(),
-            "`bevy_mouse_tracking_plugin`: there cannot be more than one entity with a `MainCamera` component",
-        );
-        if current_main.0.is_some() {
-            current_main.0 = None;
+        // If there is no main camera, zero out the resources.
+        [] => {
+            if last_main.is_some() {
+                *last_main = None;
+                *screen_res = MousePos(default());
+                *world_res = MousePosWorld(default());
+            }
         }
-    }
-}
-
-fn update_resources(
-    mut screen_res: ResMut<MousePos>,
-    mut world_res: ResMut<MousePosWorld>,
-    main: Res<MainCameraStore>,
-    screen: Query<&MousePos, Changed<MousePos>>,
-    world: Query<&MousePosWorld, Changed<MousePosWorld>>,
-    mut main_defined_last_frame: Local<bool>,
-) {
-    let main = if let Some(main) = main.0 {
-        *main_defined_last_frame = true;
-        main
-    } else {
-        // If the main camera was unset since last frame, zero out the resources.
-        if *main_defined_last_frame {
-            *screen_res = MousePos(default());
-            *world_res = MousePosWorld(default());
-            *main_defined_last_frame = false;
+        // Panic if there is more than one main camera.
+        [..] => {
+            panic!("`bevy_mouse_tracking_plugin`: there cannot be more than one entity with a `MainCamera` component");
         }
-        return;
-    };
-
-    if let Ok(&screen) = screen.get(main) {
-        *screen_res = screen;
-    }
-    if let Ok(&world) = world.get(main) {
-        *world_res = world;
     }
 }
