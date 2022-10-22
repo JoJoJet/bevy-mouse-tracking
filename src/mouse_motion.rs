@@ -3,7 +3,10 @@ use bevy::prelude::*;
 /// Plugin that tracks mouse motion.
 pub struct MouseMotionPlugin;
 
-pub use bevy::input::mouse::MouseMotion;
+#[derive(Debug, Resource, Clone, Copy, PartialEq)]
+pub struct MouseMotion {
+    pub delta: Vec2,
+}
 
 impl bevy::app::Plugin for MouseMotionPlugin {
     fn build(&self, app: &mut bevy::app::App) {
