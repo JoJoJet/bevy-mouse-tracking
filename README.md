@@ -6,6 +6,15 @@
 [![bevy_mouse_tracking on crates.io](https://img.shields.io/crates/v/bevy_mouse_tracking_plugin.svg)](https://crates.io/crates/bevy_mouse_tracking_plugin)
 [![bevy_mouse_tracking docs](https://img.shields.io/badge/docs-docs.rs-orange.svg)](https://docs.rs/bevy_mouse_tracking_plugin)
 
+## Versions
+
+| Bevy Version | Crate Version |
+|--------------|---------------|
+| 0.8          | 0.4           |
+| 0.7          | 0.2.1         |
+| 0.6          | 0.2.0         |
+| main branch  | main branch   |
+
 This crate aims to make mouse tracking both effortless and explicit.
 Tracking is opt-in and handled opaquely by this plugin.
 
@@ -31,7 +40,7 @@ App::new()
 fn setup(mut commands: Commands) {
     commands
         // Spawn a camera bundle
-        .spawn_bundle(Camera2dBundle::default())
+        .spawn(Camera2dBundle::default())
         // Opt in to mouse tracking
         .add_mouse_tracking();
 }
@@ -56,7 +65,7 @@ use bevy_mouse_tracking_plugin::MainCamera;
 fn setup(mut commands: Commands) {
     commands
         // Spawn a camera with tracking.
-        .spawn_bundle(Camera2dBundle::default())
+        .spawn(Camera2dBundle::default())
         .add_mouse_tracking()
         // Add a component to mark it as the main camera.
         .insert(MainCamera);
@@ -81,7 +90,7 @@ use bevy_mouse_tracking_plugin::MousePosWorld;
 
 fn setup(mut commands: Commands) {
     commands
-        .spawn_bundle(Camera2dBundle::default())
+        .spawn(Camera2dBundle::default())
         // Opt in to world-space mouse tracking.
         // This will automatically opt into screen-space tracking.
         .add_world_tracking()

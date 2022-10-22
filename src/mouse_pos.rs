@@ -89,7 +89,7 @@ impl<'w> InsertExt for EntityMut<'w> {
         self.add_mouse_tracking();
 
         let screen_pos = self.get::<MousePos>().unwrap();
-        let transform = self
+        let &transform = self
             .get::<GlobalTransform>()
             .unwrap_or_else(|| no_transform(self.id()));
         let proj = self
@@ -116,7 +116,7 @@ impl<'w, 's, 'a> InsertExt for EntityCommands<'w, 's, 'a> {
 /// The location of the mouse in screenspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
 /// on this should come after `CoreStage::First`.
-#[derive(Debug, Clone, Copy, PartialEq, Component)]
+#[derive(Debug, Resource, Clone, Copy, PartialEq, Component)]
 pub struct MousePos(Vec2);
 
 impl Deref for MousePos {
@@ -171,7 +171,7 @@ fn update_pos(
 /// The location of the mouse in worldspace.  
 /// This will be updated every frame during [`CoreStage::First`]. Any systems that rely
 /// on this should come after `CoreStage::First`.
-#[derive(Debug, Clone, Copy, PartialEq, Component)]
+#[derive(Debug, Resource, Clone, Copy, PartialEq, Component)]
 pub struct MousePosWorld(Vec3);
 
 impl Display for MousePosWorld {
@@ -211,22 +211,22 @@ fn update_pos_ortho(
     cameras: Query<(&GlobalTransform, &OrthographicProjection)>,
 ) {
     for (camera, mut world, screen) in tracking.iter_mut() {
-        let (camera, proj) = cameras
+        let (&camera, proj) = cameras
             .get(camera)
             .expect("only orthographic cameras are supported");
-        world.0 = compute_world_pos_ortho(screen.0, camera, proj);
+        world.0 = compute_world_pos_ortho(Vec2::new(screen.0.x, -screen.0.y), camera, proj);
     }
 }
 
 fn compute_world_pos_ortho(
     screen_pos: Vec2,
-    transform: &GlobalTransform,
+    transform: GlobalTransform,
     proj: &OrthographicProjection,
 ) -> Vec3 {
-    let offset = Vec2::new(proj.left, proj.bottom);
+    let offset = Vec2::new(proj.left, proj.top);
     // Must multiply by projection scale before applying camera global transform
     // Otherwise you get weird offset mouse positions when both scaling and panning the camera.
-    transform.mul_vec3(((screen_pos + offset) * proj.scale).extend(0.0))
+    transform * ((screen_pos + offset) * proj.scale).extend(0.0)
 }
 
 /// Marker component for the main camera. If no main camera is specified, all cameras will be treated equally.

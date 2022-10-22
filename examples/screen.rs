@@ -23,12 +23,12 @@ fn main() {
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<WindowDescriptor>) {
     // Spawn a Camera
     commands
-        .spawn_bundle(Camera2dBundle::default())
+        .spawn(Camera2dBundle::default())
         .add_mouse_tracking()
         .insert(MainCamera);
 
     // Reference for the origin
-    commands.spawn_bundle(SpriteBundle {
+    commands.spawn(SpriteBundle {
         texture: asset_server.load("origin.png"),
         ..Default::default()
     });
@@ -50,13 +50,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
     let transform = Transform::from_translation(translation);
     let value = "Mouse: (-, -)".to_string();
 
-    commands
-        .spawn_bundle(Text2dBundle {
+    commands.spawn((
+        Text2dBundle {
             text: Text::from_section(value, style).with_alignment(alignment),
             transform,
             ..Default::default()
-        })
-        .insert(Hud);
+        },
+        Hud,
+    ));
 }
 
 fn run(mouse_pos: Res<MousePos>, mut hud_text: Query<&mut Text, With<Hud>>) {
