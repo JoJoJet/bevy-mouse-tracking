@@ -25,23 +25,23 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scale = 0.5; // works fine with non-unit scaling.
     commands
-        .spawn_bundle(camera_bundle)
-        .add_world_tracking()
-        .insert(MainCamera);
+        .spawn((camera_bundle, MainCamera))
+        .add_world_tracking();
 
     // Reference for the origin
-    commands.spawn_bundle(SpriteBundle {
+    commands.spawn(SpriteBundle {
         texture: asset_server.load("origin.png"),
         ..Default::default()
     });
 
     // Reference for the mouse position
-    commands
-        .spawn_bundle(SpriteBundle {
+    commands.spawn((
+        SpriteBundle {
             texture: asset_server.load("cursor.png"),
             ..Default::default()
-        })
-        .insert(Cursor);
+        },
+        Cursor,
+    ));
 
     // Hud
     let font = asset_server.load("FiraMono-Medium.ttf");
@@ -60,13 +60,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
     let transform = Transform::from_translation(translation);
     let value = "Screen: (-, -)\nWorld: (-, -)".to_string();
 
-    commands
-        .spawn_bundle(Text2dBundle {
+    commands.spawn((
+        Text2dBundle {
             text: Text::from_section(value, style).with_alignment(alignment),
             transform,
             ..Default::default()
-        })
-        .insert(Hud);
+        },
+        Hud,
+    ));
 }
 
 fn run(

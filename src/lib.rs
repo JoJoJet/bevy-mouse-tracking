@@ -28,7 +28,7 @@
 //! fn setup(mut commands: Commands) {
 //!     commands
 //!         // Spawn a camera bundle
-//!         .spawn_bundle(Camera2dBundle::default())
+//!         .spawn(Camera2dBundle::default())
 //!         // Opt in to mouse tracking
 //!         .add_mouse_tracking();
 //! }
@@ -61,7 +61,7 @@
 //! fn setup(mut commands: Commands) {
 //!     commands
 //!         // Spawn a camera with tracking.
-//!         .spawn_bundle(Camera2dBundle::default())
+//!         .spawn(Camera2dBundle::default())
 //!         .add_mouse_tracking()
 //!         // Add a component to mark it as the main camera.
 //!         .insert(MainCamera);
@@ -95,7 +95,7 @@
 //!
 //! fn setup(mut commands: Commands) {
 //!     commands
-//!         .spawn_bundle(Camera2dBundle::default())
+//!         .spawn(Camera2dBundle::default())
 //!         // Opt in to world-space mouse tracking.
 //!         // This will automatically opt into screen-space tracking.
 //!         .add_world_tracking()
