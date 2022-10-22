@@ -6,6 +6,15 @@
 [![bevy_mouse_tracking on crates.io](https://img.shields.io/crates/v/bevy_mouse_tracking_plugin.svg)](https://crates.io/crates/bevy_mouse_tracking_plugin)
 [![bevy_mouse_tracking docs](https://img.shields.io/badge/docs-docs.rs-orange.svg)](https://docs.rs/bevy_mouse_tracking_plugin)
 
+## Versions
+
+| Bevy Version | Crate Version |
+|--------------|---------------|
+| 0.8          | 0.4           |
+| 0.7          | 0.2.1         |
+| 0.6          | 0.2.0         |
+| main branch  | main branch   |
+
 This crate aims to make mouse tracking both effortless and explicit.
 Tracking is opt-in and handled opaquely by this plugin.
 
