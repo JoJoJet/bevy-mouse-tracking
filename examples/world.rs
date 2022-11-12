@@ -12,7 +12,6 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(ClearColor(Color::BLACK))
-        .insert_resource(WindowDescriptor::default())
         .add_plugin(MousePosPlugin)
         .add_startup_system(setup)
         .add_system(bevy::window::close_on_esc)
@@ -20,7 +19,8 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<WindowDescriptor>) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Windows>) {
+    let window = windows.get_primary().unwrap();
     // Spawn a Camera
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scale = 0.5; // works fine with non-unit scaling.
@@ -54,7 +54,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, window: Res<Win
         vertical: VerticalAlign::Top,
         horizontal: HorizontalAlign::Left,
     };
-    let (win_width, win_height) = (window.width, window.height);
+    let (win_width, win_height) = (window.width(), window.height());
     let (hud_x, hud_y) = (win_width / 2. * -1., win_height / 2.);
     let translation = Vec3::new(hud_x, hud_y, 0.);
     let transform = Transform::from_translation(translation);
