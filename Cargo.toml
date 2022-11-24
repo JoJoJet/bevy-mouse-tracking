@@ -1,7 +1,7 @@
 [package]
 name = "bevy_mouse_tracking_plugin"
 description = "A plugin for effortless mouse tracking in the bevy game engine."
-version = "0.4.0"
+version = "0.5.0"
 authors = ["JoJoJet <joe102000@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -11,14 +11,12 @@ keywords = ["gamedev", "bevy", "mouse", "input"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-git = "https://github.com/bevyengine/bevy"
-rev = "cb5e2d84beb7f36427eeec13729f6dd52e04fbc0"
+version = "0.9"
 default-features = false
 features = [ "render" ]
 
 [dev-dependencies.bevy]
-git = "https://github.com/bevyengine/bevy"
-rev = "cb5e2d84beb7f36427eeec13729f6dd52e04fbc0"
+version = "0.9"
 default-features = false
 features = [
     "render",
