@@ -15,6 +15,7 @@ fn main() {
         .add_plugin(MousePosPlugin)
         .add_startup_system(setup)
         .add_system(bevy::window::close_on_esc)
+        .add_system(pan_camera)
         .add_system(run)
         .run();
 }
@@ -68,6 +69,23 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Wi
         },
         Hud,
     ));
+}
+
+fn pan_camera(mut camera: Query<&mut Transform, With<Camera>>, input: Res<Input<KeyCode>>) {
+    #[allow(clippy::obfuscated_if_else)]
+    fn axis(min: KeyCode, max: KeyCode, input: &Input<KeyCode>) -> f32 {
+        input.pressed(min).then_some(-1.0).unwrap_or(0.0)
+            + input.pressed(max).then_some(1.0).unwrap_or(0.0)
+    }
+    let translation = Vec2::new(
+        axis(KeyCode::Left, KeyCode::Right, &input),
+        axis(KeyCode::Down, KeyCode::Up, &input),
+    );
+
+    if translation != Vec2::ZERO {
+        let mut camera = camera.single_mut();
+        camera.translation += translation.extend(0.0) * 5.0;
+    }
 }
 
 fn run(
