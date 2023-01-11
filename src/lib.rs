@@ -138,6 +138,8 @@
 //!
 //! [`Res`]: bevy::ecs::system::Res
 
+#![allow(clippy::type_complexity)]
+
 pub mod prelude {
     pub use crate::mouse_motion::MouseMotionPlugin;
     pub use crate::mouse_pos::{InsertExt, MousePosPlugin};
