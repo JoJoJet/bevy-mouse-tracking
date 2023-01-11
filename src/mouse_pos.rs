@@ -207,7 +207,10 @@ impl Command for AddWorldTracking {
 }
 
 fn update_pos_ortho(
-    mut tracking: Query<(Entity, &mut MousePosWorld, &MousePos), Changed<MousePos>>,
+    mut tracking: Query<
+        (Entity, &mut MousePosWorld, &MousePos),
+        Or<(Changed<MousePos>, Changed<GlobalTransform>)>,
+    >,
     cameras: Query<(&GlobalTransform, &OrthographicProjection)>,
 ) {
     for (camera, mut world, screen) in tracking.iter_mut() {
