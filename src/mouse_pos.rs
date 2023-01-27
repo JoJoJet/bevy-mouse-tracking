@@ -65,16 +65,26 @@ impl<'w> InsertExt for EntityMut<'w> {
             panic!("could not find the window '{id:?}'")
         }
 
+        let primary_window = self.world_scope(|w| {
+            w.query_filtered::<Entity, With<PrimaryWindow>>()
+                .get_single(w)
+                .ok()
+        });
+
         let camera = self.get::<Camera>().unwrap_or_else(|| no_camera(self.id()));
-        let window = match camera.target {
-            RenderTarget::Window(id) => id,
-            RenderTarget::Image(_) => image_camera(self.id()),
+        let RenderTarget::Window(window_id) = camera.target else {
+            image_camera(self.id());
         };
-        let window = self
-            .world()
-            .resource::<Windows>()
-            .get(window)
-            .unwrap_or_else(|| no_window(window));
+        let window_id = window_id
+            .normalize(primary_window)
+            .expect("`PrimaryWindow` does not exist")
+            .entity();
+
+        let window = self.world_scope(|w| {
+            w.query::<&Window>()
+                .get(w, window_id)
+                .unwrap_or_else(|_| no_window(window_id))
+        });
 
         let mouse_pos = window.cursor_position().unwrap_or_default();
         self.insert(MousePos(mouse_pos))
