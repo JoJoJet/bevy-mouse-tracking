@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use bevy_mouse_tracking_plugin::{prelude::*, MainCamera, MousePos};
+use bevy_mouse_tracking_plugin::{prelude::*, MainCamera, MouseMotion, MousePos};
 
 #[derive(Component)]
 struct Cursor;
@@ -13,6 +13,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .insert_resource(ClearColor(Color::BLACK))
         .add_plugin(MousePosPlugin)
+        .add_plugin(MouseMotionPlugin)
         .add_startup_system(setup)
         .add_system(bevy::window::close_on_esc)
         .add_system(run)
@@ -61,8 +62,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Wi
     ));
 }
 
-fn run(mouse_pos: Res<MousePos>, mut hud_text: Query<&mut Text, With<Hud>>) {
-    let hud_value = format!("Mouse: ({}, {})", mouse_pos.x, mouse_pos.y,);
+fn run(
+    mouse_pos: Res<MousePos>,
+    mouse_motion: Res<MouseMotion>,
+    mut hud_text: Query<&mut Text, With<Hud>>,
+) {
+    let hud_value = format!(
+        "Mouse: ({}, {})\nDelta: ({}, {})",
+        mouse_pos.x, mouse_pos.y, mouse_motion.delta.x, mouse_motion.delta.y,
+    );
 
     if let Some(mut hud_text) = hud_text.iter_mut().next() {
         hud_text.sections.first_mut().unwrap().value = hud_value;

@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use bevy::input::mouse::MouseMotion as BevyMouseMotion;
+
 /// Plugin that tracks mouse motion.
 pub struct MouseMotionPlugin;
 
@@ -19,7 +21,7 @@ impl bevy::app::Plugin for MouseMotionPlugin {
     }
 }
 
-fn update_mouse_motion(mut events: EventReader<MouseMotion>, mut res: ResMut<MouseMotion>) {
+fn update_mouse_motion(mut events: EventReader<BevyMouseMotion>, mut res: ResMut<MouseMotion>) {
     let delta = events.iter().fold(Vec2::ZERO, |acc, e| acc + e.delta);
     *res = MouseMotion { delta };
 }
