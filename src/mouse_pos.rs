@@ -7,6 +7,7 @@ use bevy::{
     },
     prelude::*,
     render::camera::RenderTarget,
+    window::WindowRef,
 };
 
 /// Plugin that tracks the mouse location.
@@ -157,11 +158,15 @@ fn update_pos(
     mut movement: EventReader<CursorMoved>,
     mut cameras: Query<(&Camera, &mut MousePos)>,
 ) {
-    for &CursorMoved { id, position } in movement.iter() {
+    for &CursorMoved {
+        window, position, ..
+    } in movement.iter()
+    {
+        let window = WindowRef::Entity(window);
         // find all cameras corresponding to the window on which the cursor moved.
         for (_, mut pos) in cameras
             .iter_mut()
-            .filter(|(c, ..)| c.target == RenderTarget::Window(id))
+            .filter(|(c, ..)| c.target == RenderTarget::Window(window))
         {
             pos.0 = position;
         }
