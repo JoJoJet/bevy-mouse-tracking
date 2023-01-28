@@ -49,7 +49,7 @@ impl Display for MousePos {
 /// The simplest way to enable mouse tracking for a camera is to add the component `MousePos::default`
 /// -- however, doing this means that the initial value for the cursor position will be zero. This command handles that automatically.
 ///
-/// To add both `MousePos` and [`MousePosWorld`], consider using [`AddWorldTracking`].
+/// To add both `MousePos` and [`MousePosWorld`], consider using [`InitWorldTracking`].
 pub struct InitMouseTracking;
 
 impl EntityCommand for InitMouseTracking {
@@ -57,13 +57,13 @@ impl EntityCommand for InitMouseTracking {
         #[track_caller]
         #[cold]
         fn no_camera(id: impl std::fmt::Debug) -> ! {
-            panic!("tried to call the command `AddMouseTracking` on non-camera entity '{id:?}'")
+            panic!("tried to call the command `InitMouseTracking` on non-camera entity '{id:?}'")
         }
         #[track_caller]
         #[cold]
         fn image_camera(id: impl std::fmt::Debug) -> ! {
             panic!(
-                "tried to call the command `AddMouseTracking` on a camera ({id:?}) that renders to an image",
+                "tried to call the command `InitMouseTracking` on a camera ({id:?}) that renders to an image",
             )
         }
         #[track_caller]
@@ -141,24 +141,24 @@ impl Deref for MousePosWorld {
 }
 
 /// A [`Command`] that adds the component [`MousePosWorld`] to an entity, with a correct initial position.
-/// For more details, see the docs for [`AddMouseTracking`].
+/// For more details, see the docs for [`InitMouseTracking`].
 ///
-/// Executing this command automatically executes `AddMouseTracking`.
-pub struct AddWorldTracking(Entity);
+/// Executing this command automatically executes `InitMouseTracking`.
+pub struct InitWorldTracking(Entity);
 
-impl AddWorldTracking {
+impl InitWorldTracking {
     pub fn new(id: Entity) -> Self {
         Self(id)
     }
 }
 
-impl EntityCommand for AddWorldTracking {
+impl EntityCommand for InitWorldTracking {
     fn write(self, entity: Entity, world: &mut World) {
         fn no_transform(id: impl std::fmt::Debug) -> ! {
-            panic!("tried to call the command `AddWorldTracking` on a camera ({id:?}) with no `GlobalTransform`")
+            panic!("tried to call the command `InitWorldTracking` on a camera ({id:?}) with no `GlobalTransform`")
         }
         fn no_proj(id: impl std::fmt::Debug) -> ! {
-            panic!("tried to call the command `AddWorldTracking` on a camera ({id:?}) with no `OrthographicProjection`")
+            panic!("tried to call the command `InitWorldTracking` on a camera ({id:?}) with no `OrthographicProjection`")
         }
 
         InitMouseTracking.write(entity, world);
