@@ -144,13 +144,7 @@ impl Deref for MousePosWorld {
 /// For more details, see the docs for [`InitMouseTracking`].
 ///
 /// Executing this command automatically executes `InitMouseTracking`.
-pub struct InitWorldTracking(Entity);
-
-impl InitWorldTracking {
-    pub fn new(id: Entity) -> Self {
-        Self(id)
-    }
-}
+pub struct InitWorldTracking;
 
 impl EntityCommand for InitWorldTracking {
     fn write(self, entity: Entity, world: &mut World) {
