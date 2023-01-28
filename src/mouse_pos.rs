@@ -80,13 +80,14 @@ impl<'w> InsertExt for EntityMut<'w> {
             .expect("`PrimaryWindow` does not exist")
             .entity();
 
-        let window = self.world_scope(|w| {
-            w.query::<&Window>()
+        let mouse_pos = self.world_scope(|w| {
+            let window = w
+                .query::<&Window>()
                 .get(w, window_id)
-                .unwrap_or_else(|_| no_window(window_id))
+                .unwrap_or_else(|_| no_window(window_id));
+            window.cursor_position().unwrap_or_default()
         });
 
-        let mouse_pos = window.cursor_position().unwrap_or_default();
         self.insert(MousePos(mouse_pos))
     }
     fn add_world_tracking(&mut self) -> &mut Self {
