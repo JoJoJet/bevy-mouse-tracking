@@ -1,10 +1,7 @@
 use std::{fmt::Display, ops::Deref};
 
 use bevy::{
-    ecs::{
-        system::{Command, EntityCommands},
-        world::EntityMut,
-    },
+    ecs::system::EntityCommand,
     prelude::*,
     render::camera::RenderTarget,
     window::{PrimaryWindow, WindowRef},
@@ -24,104 +21,6 @@ impl Plugin for MousePosPlugin {
         app.insert_resource(MousePos(default()));
         app.insert_resource(MousePosWorld(default()));
         app.add_system_to_stage(CoreStage::First, update_resources.after(update_pos_ortho));
-    }
-}
-
-/// Extension trait for [`EntityCommands`] and [`EntityMut`] that allows adding mouse tracking to a camera entity.
-pub trait InsertExt {
-    /// Adds the mouse tracking component [`MousePos`] to this entity, with a correct initial value.
-    ///
-    /// # Panics
-    /// * If the current entity does not have a [`Camera`] component.
-    /// * If there is a camera, but it does not render to a window.
-    fn add_mouse_tracking(&mut self) -> &mut Self;
-    /// Adds the mouse tracking component [`MousePosWorld`] to this entity, with a correct initial value.
-    /// It is unnecessary to call both this method and [`add_mouse_tracking`](#method.add_mouse_tracking).
-    ///
-    /// # Panics
-    /// * If the current entity does not have a [`Camera`] component.
-    /// * If there is a camera, but it does not render to a window.
-    /// * If the camera does not have an [`OrthographicProjection`] component.
-    fn add_world_tracking(&mut self) -> &mut Self;
-}
-
-impl<'w> InsertExt for EntityMut<'w> {
-    fn add_mouse_tracking(&mut self) -> &mut Self {
-        #[track_caller]
-        #[cold]
-        fn no_camera(id: impl std::fmt::Debug) -> ! {
-            panic!("tried to call the command `AddMouseTracking` on non-camera entity '{id:?}'")
-        }
-        #[track_caller]
-        #[cold]
-        fn image_camera(id: impl std::fmt::Debug) -> ! {
-            panic!(
-                "tried to call the command `AddMouseTracking` on a camera ({id:?}) that renders to an image",
-            )
-        }
-        #[track_caller]
-        #[cold]
-        fn no_window(id: impl std::fmt::Debug) -> ! {
-            panic!("could not find the window '{id:?}'")
-        }
-
-        let primary_window = self.world_scope(|w| {
-            w.query_filtered::<Entity, With<PrimaryWindow>>()
-                .get_single(w)
-                .ok()
-        });
-
-        let camera = self.get::<Camera>().unwrap_or_else(|| no_camera(self.id()));
-        let RenderTarget::Window(window_id) = camera.target else {
-            image_camera(self.id());
-        };
-        let window_id = window_id
-            .normalize(primary_window)
-            .expect("`PrimaryWindow` does not exist")
-            .entity();
-
-        let mouse_pos = self.world_scope(|w| {
-            let window = w
-                .query::<&Window>()
-                .get(w, window_id)
-                .unwrap_or_else(|_| no_window(window_id));
-            window.cursor_position().unwrap_or_default()
-        });
-
-        self.insert(MousePos(mouse_pos))
-    }
-    fn add_world_tracking(&mut self) -> &mut Self {
-        fn no_transform(id: impl std::fmt::Debug) -> ! {
-            panic!("tried to call the command `AddWorldTracking` on a camera ({id:?}) with no `GlobalTransform`")
-        }
-        fn no_proj(id: impl std::fmt::Debug) -> ! {
-            panic!("tried to call the command `AddWorldTracking` on a camera ({id:?}) with no `OrthographicProjection`")
-        }
-
-        self.add_mouse_tracking();
-
-        let screen_pos = self.get::<MousePos>().unwrap();
-        let &transform = self
-            .get::<GlobalTransform>()
-            .unwrap_or_else(|| no_transform(self.id()));
-        let proj = self
-            .get::<OrthographicProjection>()
-            .unwrap_or_else(|| no_proj(self.id()));
-        let world_pos = compute_world_pos_ortho(screen_pos.0, transform, proj);
-        self.insert(MousePosWorld(world_pos))
-    }
-}
-
-impl<'w, 's, 'a> InsertExt for EntityCommands<'w, 's, 'a> {
-    fn add_mouse_tracking(&mut self) -> &mut Self {
-        let cmd = AddMouseTracking(self.id());
-        self.commands().add(cmd);
-        self
-    }
-    fn add_world_tracking(&mut self) -> &mut Self {
-        let cmd = AddWorldTracking(self.id());
-        self.commands().add(cmd);
-        self
     }
 }
 
@@ -151,17 +50,52 @@ impl Display for MousePos {
 /// -- however, doing this means that the initial value for the cursor position will be zero. This command handles that automatically.
 ///
 /// To add both `MousePos` and [`MousePosWorld`], consider using [`AddWorldTracking`].
-pub struct AddMouseTracking(Entity);
+pub struct InitMouseTracking;
 
-impl AddMouseTracking {
-    pub const fn new(id: Entity) -> Self {
-        Self(id)
-    }
-}
+impl EntityCommand for InitMouseTracking {
+    fn write(self, entity: Entity, world: &mut World) {
+        #[track_caller]
+        #[cold]
+        fn no_camera(id: impl std::fmt::Debug) -> ! {
+            panic!("tried to call the command `AddMouseTracking` on non-camera entity '{id:?}'")
+        }
+        #[track_caller]
+        #[cold]
+        fn image_camera(id: impl std::fmt::Debug) -> ! {
+            panic!(
+                "tried to call the command `AddMouseTracking` on a camera ({id:?}) that renders to an image",
+            )
+        }
+        #[track_caller]
+        #[cold]
+        fn no_window(id: impl std::fmt::Debug) -> ! {
+            panic!("could not find the window '{id:?}'")
+        }
 
-impl Command for AddMouseTracking {
-    fn write(self, world: &mut World) {
-        world.entity_mut(self.0).add_mouse_tracking();
+        let primary_window = world
+            .query_filtered::<Entity, With<PrimaryWindow>>()
+            .get_single(world)
+            .ok();
+
+        let camera = world
+            .entity(entity)
+            .get::<Camera>()
+            .unwrap_or_else(|| no_camera(entity));
+        let RenderTarget::Window(window_id) = camera.target else {
+            image_camera(entity);
+        };
+        let window_id = window_id
+            .normalize(primary_window)
+            .expect("`PrimaryWindow` does not exist")
+            .entity();
+
+        let window = world
+            .query::<&Window>()
+            .get(world, window_id)
+            .unwrap_or_else(|_| no_window(window_id));
+        let mouse_pos = window.cursor_position().unwrap_or_default();
+
+        world.entity_mut(entity).insert(MousePos(mouse_pos));
     }
 }
 
@@ -218,9 +152,28 @@ impl AddWorldTracking {
     }
 }
 
-impl Command for AddWorldTracking {
-    fn write(self, world: &mut World) {
-        world.entity_mut(self.0).add_world_tracking();
+impl EntityCommand for AddWorldTracking {
+    fn write(self, entity: Entity, world: &mut World) {
+        fn no_transform(id: impl std::fmt::Debug) -> ! {
+            panic!("tried to call the command `AddWorldTracking` on a camera ({id:?}) with no `GlobalTransform`")
+        }
+        fn no_proj(id: impl std::fmt::Debug) -> ! {
+            panic!("tried to call the command `AddWorldTracking` on a camera ({id:?}) with no `OrthographicProjection`")
+        }
+
+        InitMouseTracking.write(entity, world);
+
+        let mut entity_mut = world.entity_mut(entity);
+
+        let screen_pos = entity_mut.get::<MousePos>().unwrap();
+        let &transform = entity_mut
+            .get::<GlobalTransform>()
+            .unwrap_or_else(|| no_transform(entity));
+        let proj = entity_mut
+            .get::<OrthographicProjection>()
+            .unwrap_or_else(|| no_proj(entity));
+        let world_pos = compute_world_pos_ortho(screen_pos.0, transform, proj);
+        entity_mut.insert(MousePosWorld(world_pos));
     }
 }
 
