@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use bevy_mouse_tracking_plugin::{prelude::*, MainCamera, MouseMotion, MousePos};
+use bevy_mouse_tracking_plugin::{
+    mouse_pos::InitMouseTracking, prelude::*, MainCamera, MouseMotion, MousePos,
+};
 
 #[derive(Component)]
 struct Cursor;
@@ -26,7 +28,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Wi
     // Spawn a Camera
     commands
         .spawn(Camera2dBundle::default())
-        .add_mouse_tracking()
+        .add(InitMouseTracking)
         .insert(MainCamera);
 
     // Reference for the origin

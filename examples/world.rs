@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use bevy_mouse_tracking_plugin::{prelude::*, MainCamera, MousePos, MousePosWorld};
+use bevy_mouse_tracking_plugin::{
+    mouse_pos::InitWorldTracking, prelude::*, MainCamera, MousePos, MousePosWorld,
+};
 
 #[derive(Component)]
 struct Cursor;
@@ -27,7 +29,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Wi
     camera_bundle.projection.scale = 0.5; // works fine with non-unit scaling.
     commands
         .spawn((camera_bundle, MainCamera))
-        .add_world_tracking();
+        .add(InitWorldTracking);
 
     // Reference for the origin
     commands.spawn(SpriteBundle {
