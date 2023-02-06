@@ -12,13 +12,13 @@ keywords = ["gamedev", "bevy", "mouse", "input"]
 
 [dependencies.bevy]
 git = "https://github.com/bevyengine/bevy"
-rev = "5d912a2f3514aa8a2af58d0ac89503418db30b48"
+rev = "dcc03724a57e0980bb98d1b642e80fb2d55ac89c"
 default-features = false
 features = [ "bevy_render" ]
 
 [dev-dependencies.bevy]
 git = "https://github.com/bevyengine/bevy"
-rev = "5d912a2f3514aa8a2af58d0ac89503418db30b48"
+rev = "dcc03724a57e0980bb98d1b642e80fb2d55ac89c"
 default-features = false
 features = [
     "bevy_render",
