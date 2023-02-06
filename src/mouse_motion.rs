@@ -14,9 +14,10 @@ impl bevy::app::Plugin for MouseMotionPlugin {
     fn build(&self, app: &mut bevy::app::App) {
         app.add_event::<MouseMotion>();
         app.insert_resource(MouseMotion { delta: Vec2::ZERO });
-        app.add_system_to_stage(
-            CoreStage::First,
-            update_mouse_motion.after(Events::<MouseMotion>::update_system),
+        app.add_system(
+            update_mouse_motion
+                .in_base_set(CoreSet::First)
+                .after(Events::<MouseMotion>::update_system),
         );
     }
 }

@@ -12,15 +12,23 @@ pub struct MousePosPlugin;
 
 impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(
-            CoreStage::First,
-            update_pos.after(Events::<CursorMoved>::update_system),
-        );
-        app.add_system_to_stage(CoreStage::First, update_pos_ortho.after(update_pos));
-
-        app.insert_resource(MousePos(default()));
-        app.insert_resource(MousePosWorld(default()));
-        app.add_system_to_stage(CoreStage::First, update_resources.after(update_pos_ortho));
+        app.insert_resource(MousePos(default()))
+            .insert_resource(MousePosWorld(default()))
+            .add_system(
+                update_pos
+                    .in_base_set(CoreSet::First)
+                    .after(Events::<CursorMoved>::update_system),
+            )
+            .add_system(
+                update_pos_ortho
+                    .in_base_set(CoreSet::First)
+                    .after(update_pos),
+            )
+            .add_system(
+                update_resources
+                    .in_base_set(CoreSet::First)
+                    .after(update_pos_ortho),
+            );
     }
 }
 
