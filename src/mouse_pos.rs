@@ -212,7 +212,7 @@ pub struct MainCamera;
 fn update_resources(
     mut last_main: Local<Option<Entity>>,
     added_main: Query<Entity, Added<MainCamera>>,
-    removed_main: RemovedComponents<MainCamera>,
+    mut removed_main: RemovedComponents<MainCamera>,
     mut screen_res: ResMut<MousePos>,
     mut world_res: ResMut<MousePosWorld>,
     screen: Query<&MousePos>,
