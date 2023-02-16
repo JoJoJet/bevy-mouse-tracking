@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 use bevy_mouse_tracking_plugin::{
     mouse_pos::InitMouseTracking, prelude::*, MainCamera, MouseMotion, MousePos,
@@ -22,8 +22,12 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Windows>) {
-    let window = windows.get_primary().unwrap();
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window: Query<&Window, With<PrimaryWindow>>,
+) {
+    let window = window.single();
 
     // Spawn a Camera
     commands
@@ -44,10 +48,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Wi
         font_size: 24.0,
         color: Color::ORANGE,
     };
-    let alignment = TextAlignment {
-        vertical: VerticalAlign::Top,
-        horizontal: HorizontalAlign::Left,
-    };
     let (win_width, win_height) = (window.width(), window.height());
     let (hud_x, hud_y) = (win_width / 2. * -1., win_height / 2.);
     let translation = Vec3::new(hud_x, hud_y, 0.);
@@ -56,7 +56,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Wi
 
     commands.spawn((
         Text2dBundle {
-            text: Text::from_section(value, style).with_alignment(alignment),
+            text: Text::from_section(value, style).with_alignment(TextAlignment::Left),
             transform,
             ..Default::default()
         },
