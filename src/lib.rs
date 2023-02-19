@@ -142,7 +142,7 @@
 
 pub mod prelude {
     pub use crate::mouse_motion::MouseMotionPlugin;
-    pub use crate::mouse_pos::MousePosPlugin;
+    pub use crate::mouse_pos::{InitMouseTracking, InitWorldTracking, MousePosPlugin};
 }
 
 pub mod mouse_pos;
