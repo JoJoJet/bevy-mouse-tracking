@@ -21,7 +21,10 @@ git = "https://github.com/bevyengine/bevy"
 rev = "dcc03724a57e0980bb98d1b642e80fb2d55ac89c"
 default-features = false
 features = [
+    "bevy_core_pipeline",
     "bevy_render",
+    "bevy_sprite",
+    "bevy_text",
     "png",
     "bevy_asset",
     "bevy_winit"
