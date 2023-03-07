@@ -199,7 +199,7 @@ fn compute_world_pos_ortho(
     transform: GlobalTransform,
     proj: &OrthographicProjection,
 ) -> Vec3 {
-    let offset = Vec2::new(proj.left, proj.top);
+    let offset = Vec2::new(proj.area.min.x, proj.area.max.y);
     // Must multiply by projection scale before applying camera global transform
     // Otherwise you get weird offset mouse positions when both scaling and panning the camera.
     transform * (((screen_pos + offset) * proj.scale) * Vec2::new(1.0, -1.0)).extend(0.0)
