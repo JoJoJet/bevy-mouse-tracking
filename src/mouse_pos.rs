@@ -23,7 +23,7 @@ impl Plugin for MousePosPlugin {
                 update_pos_ortho
                     .in_base_set(CoreSet::First)
                     .after(update_pos),
-                // Main camera convenience resources.
+                // Main camera convenience resources
                 update_resources
                     .in_base_set(CoreSet::First)
                     .after(update_pos_ortho),
