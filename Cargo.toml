@@ -13,7 +13,10 @@ keywords = ["gamedev", "bevy", "mouse", "input"]
 [dependencies.bevy]
 version = "0.10"
 default-features = false
-features = [ "bevy_render" ]
+features = [
+    "bevy_core_pipeline",
+    "bevy_render"
+    ]
 
 [dev-dependencies.bevy]
 version = "0.10"
