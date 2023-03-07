@@ -14,21 +14,20 @@ impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(MousePos(default()))
             .insert_resource(MousePosWorld(default()))
-            .add_system(
+            .add_systems((
+                // Screen-space
                 update_pos
                     .in_base_set(CoreSet::First)
                     .after(Events::<CursorMoved>::update_system),
-            )
-            .add_system(
+                // World-space orthographic
                 update_pos_ortho
                     .in_base_set(CoreSet::First)
                     .after(update_pos),
-            )
-            .add_system(
+                // Main camera convenience resources.
                 update_resources
                     .in_base_set(CoreSet::First)
                     .after(update_pos_ortho),
-            );
+            ));
     }
 }
 
