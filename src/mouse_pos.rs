@@ -179,7 +179,7 @@ fn update_pos_ortho(
         let (&camera, proj) = cameras
             .get(camera)
             .expect("only orthographic cameras are supported");
-        world.0 = compute_world_pos_ortho(Vec2::new(screen.0.x, -screen.0.y), camera, proj);
+        world.0 = compute_world_pos_ortho(screen.0, camera, proj);
     }
 }
 
@@ -188,10 +188,10 @@ fn compute_world_pos_ortho(
     transform: GlobalTransform,
     proj: &OrthographicProjection,
 ) -> Vec3 {
-    let offset = Vec2::new(proj.area.min.x, proj.area.max.y);
+    let offset = Vec2::new(proj.area.min.x, proj.area.max.y) / proj.scale;
     // Must multiply by projection scale before applying camera global transform
     // Otherwise you get weird offset mouse positions when both scaling and panning the camera.
-    transform * (((screen_pos + offset) * proj.scale) * Vec2::new(1.0, -1.0)).extend(0.0)
+    transform * ((screen_pos * Vec2::new(1.0, -1.0) + offset) * proj.scale).extend(0.0)
 }
 
 /// Marker component for the main camera. If no main camera is specified, all cameras will be treated equally.
