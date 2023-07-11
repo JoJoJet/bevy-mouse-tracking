@@ -29,9 +29,9 @@
 //!
 //! App::new()
 //!     .add_plugins(DefaultPlugins)
-//!     .add_plugin(MousePosPlugin)
-//!     .add_startup_system(setup)
-//!     .add_system(dbg_mouse)
+//!     .add_plugins(MousePosPlugin)
+//!     .add_systems(Startup, setup)
+//!     .add_systems(Update, dbg_mouse)
 //!     // ...
 //! #    .update();
 //!
@@ -65,9 +65,9 @@
 //! # use bevy_mouse_tracking_plugin::{prelude::*, MousePos};
 //! # App::new()
 //! #    .add_plugins(DefaultPlugins)
-//! #    .add_plugin(MousePosPlugin)
-//! #    .add_startup_system(setup)
-//! #    .add_system(dbg_mouse)
+//! #    .add_plugins(MousePosPlugin)
+//! #    .add_systems(Startup, setup)
+//! #    .add_systems(Update, dbg_mouse)
 //! #    .update();
 //! use bevy_mouse_tracking_plugin::MainCamera;
 //!
@@ -99,10 +99,10 @@
 //! # use bevy_mouse_tracking_plugin::{prelude::*, MousePos, MainCamera};
 //! # App::new()
 //! #    .add_plugins(DefaultPlugins)
-//! #    .add_plugin(MousePosPlugin)
-//! #    .add_startup_system(setup)
-//! #    .add_system(dbg_world_single)
-//! #    .add_system(dbg_world_res)
+//! #    .add_plugins(MousePosPlugin)
+//! #    .add_systems(Startup, setup)
+//! #    .add_systems(Update, dbg_world_single)
+//! #    .add_systems(Update, dbg_world_res)
 //! #    .update();
 //! use bevy_mouse_tracking_plugin::MousePosWorld;
 //!
