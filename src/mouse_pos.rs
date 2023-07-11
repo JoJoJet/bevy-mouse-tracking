@@ -14,20 +14,10 @@ impl Plugin for MousePosPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(MousePos(default()))
             .insert_resource(MousePosWorld(default()))
-            .add_systems((
-                // Screen-space
-                update_pos
-                    .in_base_set(CoreSet::First)
-                    .after(Events::<CursorMoved>::update_system),
-                // World-space orthographic
-                update_pos_ortho
-                    .in_base_set(CoreSet::First)
-                    .after(update_pos),
-                // Main camera convenience resources
-                update_resources
-                    .in_base_set(CoreSet::First)
-                    .after(update_pos_ortho),
-            ));
+            .add_systems(
+                Update,
+                (update_pos, update_pos_ortho, update_resources).chain(),
+            );
     }
 }
 
@@ -60,7 +50,7 @@ impl Display for MousePos {
 pub struct InitMouseTracking;
 
 impl EntityCommand for InitMouseTracking {
-    fn write(self, entity: Entity, world: &mut World) {
+    fn apply(self, entity: Entity, world: &mut World) {
         #[track_caller]
         #[cold]
         fn no_camera(id: impl std::fmt::Debug) -> ! {
@@ -154,7 +144,7 @@ impl Deref for MousePosWorld {
 pub struct InitWorldTracking;
 
 impl EntityCommand for InitWorldTracking {
-    fn write(self, entity: Entity, world: &mut World) {
+    fn apply(self, entity: Entity, world: &mut World) {
         fn no_transform(id: impl std::fmt::Debug) -> ! {
             panic!("tried to call the command `InitWorldTracking` on a camera ({id:?}) with no `GlobalTransform`")
         }
@@ -162,7 +152,7 @@ impl EntityCommand for InitWorldTracking {
             panic!("tried to call the command `InitWorldTracking` on a camera ({id:?}) with no `OrthographicProjection`")
         }
 
-        InitMouseTracking.write(entity, world);
+        InitMouseTracking.apply(entity, world);
 
         let mut entity_mut = world.entity_mut(entity);
 
