@@ -98,8 +98,7 @@
 //! # App::new()
 //! #    .add_plugins((DefaultPlugins, MousePosPlugin))
 //! #    .add_systems(Startup, setup)
-//! #    .add_systems(Update, dbg_world_single)
-//! #    .add_systems(Update, dbg_world_res)
+//! #    .add_systems(Update, (dbg_world_single, dbg_world_res))
 //! #    .update();
 //! use bevy_mouse_tracking_plugin::MousePosWorld;
 //!

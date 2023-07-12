@@ -14,10 +14,9 @@ fn main() {
     App::new()
         .add_plugins((DefaultPlugins, MousePosPlugin))
         .insert_resource(ClearColor(Color::BLACK))
-        .add_startup_system(setup)
-        .add_system(bevy::window::close_on_esc)
-        .add_system(pan_camera)
-        .add_system(run)
+        .add_systems(Startup, setup)
+        .add_systems(Update, bevy::window::close_on_esc)
+        .add_systems(Update, (pan_camera, run))
         .run();
 }
 
