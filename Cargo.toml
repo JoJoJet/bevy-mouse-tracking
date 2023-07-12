@@ -28,5 +28,6 @@ features = [
     "bevy_text",
     "png",
     "bevy_asset",
-    "bevy_winit"
+    "bevy_winit",
+    "x11"
     ]
