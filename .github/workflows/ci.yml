@@ -45,7 +45,8 @@ jobs:
             fi
           done
           zip traces.zip trace*.json
-          zip -r screenshots.zip screenshots-*
+          touch placeholder
+          zip -r screenshots.zip screenshots-* placeholder
       - name: save traces
         uses: actions/upload-artifact@v3
         with:
