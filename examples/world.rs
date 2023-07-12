@@ -12,9 +12,8 @@ struct Hud;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((DefaultPlugins, MousePosPlugin))
         .insert_resource(ClearColor(Color::BLACK))
-        .add_plugin(MousePosPlugin)
         .add_startup_system(setup)
         .add_system(bevy::window::close_on_esc)
         .add_system(pan_camera)

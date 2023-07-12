@@ -28,8 +28,7 @@
 //! // First, add the plugin to your `App`.
 //!
 //! App::new()
-//!     .add_plugins(DefaultPlugins)
-//!     .add_plugins(MousePosPlugin)
+//!     .add_plugins((DefaultPlugins, MousePosPlugin))
 //!     .add_systems(Startup, setup)
 //!     .add_systems(Update, dbg_mouse)
 //!     // ...
@@ -64,8 +63,7 @@
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::{prelude::*, MousePos};
 //! # App::new()
-//! #    .add_plugins(DefaultPlugins)
-//! #    .add_plugins(MousePosPlugin)
+//! #    .add_plugins((DefaultPlugins, MousePosPlugin))
 //! #    .add_systems(Startup, setup)
 //! #    .add_systems(Update, dbg_mouse)
 //! #    .update();
@@ -98,8 +96,7 @@
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::{prelude::*, MousePos, MainCamera};
 //! # App::new()
-//! #    .add_plugins(DefaultPlugins)
-//! #    .add_plugins(MousePosPlugin)
+//! #    .add_plugins((DefaultPlugins, MousePosPlugin))
 //! #    .add_systems(Startup, setup)
 //! #    .add_systems(Update, dbg_world_single)
 //! #    .add_systems(Update, dbg_world_res)

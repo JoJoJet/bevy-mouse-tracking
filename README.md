@@ -32,8 +32,7 @@ use bevy_mouse_tracking_plugin::prelude::*;
 // First, add the plugin to your `App`.
 
 App::new()
-    .add_plugins(DefaultPlugins)
-    .add_plugins(MousePosPlugin)
+    .add_plugins((DefaultPlugins, MousePosPlugin))
     .add_systems(Startup, setup)
     .add_systems(Update, dbg_mouse)
     // ...
