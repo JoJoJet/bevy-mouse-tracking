@@ -6,6 +6,7 @@
 //!
 //! | Bevy Version | Crate Version |
 //! |--------------|---------------|
+//! | 0.11         | 0.6           |
 //! | 0.9          | 0.5           |
 //! | 0.8          | 0.4           |
 //! | 0.7          | 0.2.1         |
@@ -27,10 +28,9 @@
 //! // First, add the plugin to your `App`.
 //!
 //! App::new()
-//!     .add_plugins(DefaultPlugins)
-//!     .add_plugin(MousePosPlugin)
-//!     .add_startup_system(setup)
-//!     .add_system(dbg_mouse)
+//!     .add_plugins((DefaultPlugins, MousePosPlugin))
+//!     .add_systems(Startup, setup)
+//!     .add_systems(Update, dbg_mouse)
 //!     // ...
 //! #    .update();
 //!
@@ -39,8 +39,10 @@
 //!     commands
 //!         // Spawn a camera bundle
 //!         .spawn(Camera2dBundle::default())
-//!         // Opt in to mouse tracking
-//!         .add_mouse_tracking();
+//!         // Opt in to mouse tracking.
+//!         // `InitMouseTracking` is a command that adds the mouse tracking
+//!         // component to the camera with a correct initial value.
+//!         .add(InitMouseTracking);
 //! }
 //!
 //! // Now, we can track the mouse position by querying for it.
@@ -61,10 +63,9 @@
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::{prelude::*, MousePos};
 //! # App::new()
-//! #    .add_plugins(DefaultPlugins)
-//! #    .add_plugin(MousePosPlugin)
-//! #    .add_startup_system(setup)
-//! #    .add_system(dbg_mouse)
+//! #    .add_plugins((DefaultPlugins, MousePosPlugin))
+//! #    .add_systems(Startup, setup)
+//! #    .add_systems(Update, dbg_mouse)
 //! #    .update();
 //! use bevy_mouse_tracking_plugin::MainCamera;
 //!
@@ -72,7 +73,7 @@
 //!     commands
 //!         // Spawn a camera with tracking.
 //!         .spawn(Camera2dBundle::default())
-//!         .add_mouse_tracking()
+//!         .add(InitMouseTracking)
 //!         // Add a component to mark it as the main camera.
 //!         .insert(MainCamera);
 //! }
@@ -95,11 +96,9 @@
 //! # use bevy::prelude::*;
 //! # use bevy_mouse_tracking_plugin::{prelude::*, MousePos, MainCamera};
 //! # App::new()
-//! #    .add_plugins(DefaultPlugins)
-//! #    .add_plugin(MousePosPlugin)
-//! #    .add_startup_system(setup)
-//! #    .add_system(dbg_world_single)
-//! #    .add_system(dbg_world_res)
+//! #    .add_plugins((DefaultPlugins, MousePosPlugin))
+//! #    .add_systems(Startup, setup)
+//! #    .add_systems(Update, (dbg_world_single, dbg_world_res))
 //! #    .update();
 //! use bevy_mouse_tracking_plugin::MousePosWorld;
 //!
@@ -108,7 +107,7 @@
 //!         .spawn(Camera2dBundle::default())
 //!         // Opt in to world-space mouse tracking.
 //!         // This will automatically opt into screen-space tracking.
-//!         .add_world_tracking()
+//!         .add(InitWorldTracking)
 //!         // ...
 //! #       .insert(MainCamera);
 //! }
@@ -142,7 +141,7 @@
 
 pub mod prelude {
     pub use crate::mouse_motion::MouseMotionPlugin;
-    pub use crate::mouse_pos::{InsertExt, MousePosPlugin};
+    pub use crate::mouse_pos::{InitMouseTracking, InitWorldTracking, MousePosPlugin};
 }
 
 pub mod mouse_pos;

@@ -1,4 +1,4 @@
-on: [pull_request]
+on: [push, pull_request]
 
 name: CI
 
@@ -6,17 +6,68 @@ jobs:
 
   test:
     name: Test Suite
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - name: Install Bevy dependencies
+        run: |
+          sudo apt-get update;
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install --no-install-recommends -yq \
+            libasound2-dev libudev-dev;
+      - name: install xvfb, llvmpipe and lavapipe
+        run: |
+          sudo apt-get update -y -qq
+          sudo add-apt-repository ppa:oibaf/graphics-drivers -y
+          sudo apt-get update
+          sudo apt install -y xvfb libegl1-mesa libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - uses: actions-rs/cargo@v1
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-run-examples-${{ hashFiles('**/Cargo.toml') }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run examples
+        run: |
+          for example in examples/*.rs; do
+            example_name=`basename $example .rs`
+            echo -n $example_name > last_example_run
+            echo "running $example_name - "`date`
+            time TRACE_CHROME=trace-$example_name.json CI_TESTING_CONFIG=.github/workflows/testing.ron xvfb-run cargo run --example $example_name --features "bevy/bevy_ci_testing,bevy/trace,bevy/trace_chrome"
+            sleep 10
+            if [ `find ./ -maxdepth 1 -name 'screenshot-*.png' -print -quit` ]; then
+              mkdir screenshots-$example_name
+              mv screenshot-*.png screenshots-$example_name/
+            fi
+          done
+          zip traces.zip trace*.json
+          touch placeholder
+          zip -r screenshots.zip screenshots-* placeholder
+      - name: save traces
+        uses: actions/upload-artifact@v3
         with:
-          command: test
+          name: example-traces.zip
+          path: traces.zip
+      - name: save screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: screenshots.zip
+          path: screenshots.zip
+      - name: Save PR number
+        if: ${{ failure() && github.event_name == 'pull_request' }}
+        run: |
+          mkdir -p ./example-run
+          echo ${{ github.event.number }} > ./example-run/NR
+          mv last_example_run ./example-run/
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() && github.event_name == 'pull_request' }}
+        with:
+          name: example-run
+          path: example-run/
 
   fmt:
     name: Rustfmt

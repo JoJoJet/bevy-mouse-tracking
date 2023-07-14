@@ -1,6 +1,8 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
-use bevy_mouse_tracking_plugin::{prelude::*, MainCamera, MousePos, MousePosWorld};
+use bevy_mouse_tracking_plugin::{
+    mouse_pos::InitWorldTracking, prelude::*, MainCamera, MousePos, MousePosWorld,
+};
 
 #[derive(Component)]
 struct Cursor;
@@ -10,24 +12,27 @@ struct Hud;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((DefaultPlugins, MousePosPlugin))
         .insert_resource(ClearColor(Color::BLACK))
-        .add_plugin(MousePosPlugin)
-        .add_startup_system(setup)
-        .add_system(bevy::window::close_on_esc)
-        .add_system(pan_camera)
-        .add_system(run)
+        .add_systems(Startup, setup)
+        .add_systems(Update, bevy::window::close_on_esc)
+        .add_systems(Update, (pan_camera, run))
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Windows>) {
-    let window = windows.get_primary().unwrap();
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window: Query<&Window, With<PrimaryWindow>>,
+) {
+    let window = window.single();
+
     // Spawn a Camera
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scale = 0.5; // works fine with non-unit scaling.
     commands
         .spawn((camera_bundle, MainCamera))
-        .add_world_tracking();
+        .add(InitWorldTracking);
 
     // Reference for the origin
     commands.spawn(SpriteBundle {
@@ -51,10 +56,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Wi
         font_size: 24.0,
         color: Color::ORANGE,
     };
-    let alignment = TextAlignment {
-        vertical: VerticalAlign::Top,
-        horizontal: HorizontalAlign::Left,
-    };
     let (win_width, win_height) = (window.width(), window.height());
     let (hud_x, hud_y) = (win_width / 2. * -1., win_height / 2.);
     let translation = Vec3::new(hud_x, hud_y, 0.);
@@ -63,7 +64,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, windows: Res<Wi
 
     commands.spawn((
         Text2dBundle {
-            text: Text::from_section(value, style).with_alignment(alignment),
+            text: Text::from_section(value, style).with_alignment(TextAlignment::Left),
             transform,
             ..Default::default()
         },
