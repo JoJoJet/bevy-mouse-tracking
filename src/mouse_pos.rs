@@ -104,7 +104,7 @@ fn update_pos(
     let primary_window = primary_window.get_single().ok();
     for &CursorMoved {
         window, position, ..
-    } in movement.iter()
+    } in movement.read()
     {
         let target = RenderTarget::Window(WindowRef::Entity(window)).normalize(None);
         // find all cameras corresponding to the window on which the cursor moved.
@@ -211,7 +211,7 @@ fn update_resources(
     // This includes the main camera from last frame, and all entities with the component added this frame.
     let mut with_marker: Vec<_> = Option::into_iter(*last_main).chain(&added_main).collect();
     // Ditch any removed components.
-    for rem in removed_main.iter() {
+    for rem in removed_main.read() {
         if let Some(idx) = with_marker.iter().position(|&x| x == rem) {
             with_marker.remove(idx);
         }
