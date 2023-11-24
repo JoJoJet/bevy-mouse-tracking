@@ -10,6 +10,7 @@
 
 | Bevy Version | Crate Version |
 |--------------|---------------|
+| 0.12         | 0.7           |
 | 0.11         | 0.6           |
 | 0.9          | 0.5           |
 | 0.8          | 0.4           |
@@ -132,6 +133,7 @@ The motion can be accessed from any system in a [`MouseMotion`] resource.
 As a final aside: the name of this crate is intentionally verbose,
 since it is very likely that this crate will eventually be made redundant by future updates to Bevy.  
 I recommend renaming the crate in your `Cargo.toml`:
+
 ```toml
 [dependencies]
 mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "..." }

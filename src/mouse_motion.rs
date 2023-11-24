@@ -16,12 +16,12 @@ impl bevy::app::Plugin for MouseMotionPlugin {
         app.insert_resource(MouseMotion { delta: Vec2::ZERO });
         app.add_systems(
             First,
-            update_mouse_motion.after(Events::<MouseMotion>::update_system),
+            update_mouse_motion.after(bevy::ecs::event::event_update_system::<MouseMotion>),
         );
     }
 }
 
 fn update_mouse_motion(mut events: EventReader<BevyMouseMotion>, mut res: ResMut<MouseMotion>) {
-    let delta = events.iter().fold(Vec2::ZERO, |acc, e| acc + e.delta);
+    let delta = events.read().fold(Vec2::ZERO, |acc, e| acc + e.delta);
     *res = MouseMotion { delta };
 }
