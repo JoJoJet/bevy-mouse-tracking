@@ -22,7 +22,6 @@ impl bevy::app::Plugin for MouseMotionPlugin {
     }
 }
 
-
 fn update_mouse_motion(mut events: EventReader<BevyMouseMotion>, mut res: ResMut<MouseMotion>) {
     let delta = events.read().fold(Vec2::ZERO, |acc, e| acc + e.delta);
     *res = MouseMotion { delta };
