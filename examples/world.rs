@@ -64,7 +64,7 @@ fn setup(
 
     commands.spawn((
         Text2dBundle {
-            text: Text::from_section(value, style).with_alignment(TextAlignment::Left),
+            text: Text::from_section(value, style).with_justify(JustifyText::Left),
             transform,
             ..Default::default()
         },
@@ -72,15 +72,15 @@ fn setup(
     ));
 }
 
-fn pan_camera(mut camera: Query<&mut Transform, With<Camera>>, input: Res<Input<KeyCode>>) {
+fn pan_camera(mut camera: Query<&mut Transform, With<Camera>>, input: Res<ButtonInput<KeyCode>>) {
     #[allow(clippy::obfuscated_if_else)]
-    fn axis(min: KeyCode, max: KeyCode, input: &Input<KeyCode>) -> f32 {
+    fn axis(min: KeyCode, max: KeyCode, input: &ButtonInput<KeyCode>) -> f32 {
         input.pressed(min).then_some(-1.0).unwrap_or(0.0)
             + input.pressed(max).then_some(1.0).unwrap_or(0.0)
     }
     let translation = Vec2::new(
-        axis(KeyCode::Left, KeyCode::Right, &input),
-        axis(KeyCode::Down, KeyCode::Up, &input),
+        axis(KeyCode::ArrowLeft, KeyCode::ArrowRight, &input),
+        axis(KeyCode::ArrowDown, KeyCode::ArrowUp, &input),
     );
 
     if translation != Vec2::ZERO {

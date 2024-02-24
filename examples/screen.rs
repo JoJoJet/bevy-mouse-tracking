@@ -54,7 +54,7 @@ fn setup(
 
     commands.spawn((
         Text2dBundle {
-            text: Text::from_section(value, style).with_alignment(TextAlignment::Left),
+            text: Text::from_section(value, style).with_justify(JustifyText::Left),
             transform,
             ..Default::default()
         },
